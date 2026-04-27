@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель управления — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">WERTXRUST CONTROL</div>
+            <h1>Центр управления</h1>
+            <p>
+                Здесь отображаются только те разделы, которые доступны твоей роли.
+                Если раздел скрыт — текущий уровень доступа не позволяет его открыть.
+            </p>
+        </div>
+
+        <div class="panel-user-card">
+            {% if profile and profile.avatar_full %}
+                <img src="{{ profile.avatar_full }}" alt="">
+            {% elif request.user.steam_profile.avatar_full %}
+                <img src="{{ request.user.steam_profile.avatar_full }}" alt="">
+            {% endif %}
+
+            <div>
+                <strong>
+                    {% if request.user.is_superuser %}
+                        Superuser
+                    {% elif profile %}
+                        {{ profile.nickname|default:profile.steam_id }}
+                    {% else %}
+                        Администратор
+                    {% endif %}
+                </strong>
+
+                <span>
+                    {% if request.user.is_superuser %}
+                        Полный технический доступ
+                    {% elif profile %}
+                        {{ profile.get_project_role_display }}
+                    {% else %}
+                        Технический доступ
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-stats">
+        <div class="panel-stat-card">
+            <span>Разделов</span>
+            <strong>{{ stats.sections_count }}</strong>
+        </div>
+
+        <div class="panel-stat-card">
+            <span>Steam профилей</span>
+            <strong>{{ stats.players_count }}</strong>
+        </div>
+
+        <div class="panel-stat-card">
+            <span>Сотрудников</span>
+            <strong>{{ stats.staff_count }}</strong>
+        </div>
+
+        <div class="panel-stat-card">
+            <span>Банов сайта</span>
+            <strong>{{ stats.banned_count }}</strong>
+        </div>
+    </div>
+
+    <div class="panel-grid">
+        {% for section in sections %}
+            <a class="panel-card" href="{% url section.url_name %}">
+                <div class="panel-card-icon">
+                    {{ section.icon_symbol }}
+                </div>
+
+                <div>
+                    <h3>{{ section.title }}</h3>
+                    <p>{{ section.description }}</p>
+                </div>
+            </a>
+        {% empty %}
+            <div class="panel-card">
+                <div class="panel-card-icon">!</div>
+
+                <div>
+                    <h3>Нет доступных разделов</h3>
+                    <p>Для доступа нужна роль сотрудника проекта.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

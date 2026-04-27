@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Разработка и настройки — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">DEVELOPER</div>
+            <h1>Разработка и настройки</h1>
+            <p>
+                Здесь будут технические инструменты проекта. Сейчас подключаем базу для серверного API,
+                чтобы будущий C#-скрипт мог отправлять данные на сайт.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="panel-forms-grid">
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="api_token">
+
+            <h2>Создать серверный API-ключ</h2>
+            <p>
+                Этот ключ будет использоваться C#-агентом на Rust-сервере.
+                На старте можно оставить разрешённый IP пустым.
+            </p>
+
+            <div class="panel-form-grid">
+                {{ api_token_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать ключ
+            </button>
+        </form>
+
+        <div class="panel-form-card">
+            <h2>Как будет работать серверный агент</h2>
+            <p>
+                Rust-сервер через C#-скрипт будет отправлять на сайт Steam ID, ник,
+                серверный IP, сервер, события входа, статистику и будущие действия модерации.
+            </p>
+
+            <div class="api-flow-list">
+                <div>
+                    <strong>1</strong>
+                    <span>Игрок заходит на Rust-сервер</span>
+                </div>
+
+                <div>
+                    <strong>2</strong>
+                    <span>C#-агент собирает Steam ID, ник и серверный IP</span>
+                </div>
+
+                <div>
+                    <strong>3</strong>
+                    <span>Агент отправляет данные на Django API</span>
+                </div>
+
+                <div>
+                    <strong>4</strong>
+                    <span>Сайт обновляет базу игроков и проверки</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>API-ключи серверов</h2>
+            <p>
+                Ключи нужны для связи Rust-сервера с сайтом. Храни их приватно.
+            </p>
+        </div>
+
+        <div class="api-token-grid">
+            {% for token in api_tokens %}
+                <article class="api-token-card">
+                    <div>
+                        <span>{% if token.is_active %}Активен{% else %}Выключен{% endif %}</span>
+                        <h3>{{ token.name }}</h3>
+                        <p>
+                            Сервер:
+                            {% if token.server %}
+                                {{ token.server.name }}
+                            {% else %}
+                                любой
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="api-token-value">
+                        <code>{{ token.token }}</code>
+                    </div>
+
+                    <div class="api-token-meta">
+                        <small>IP: {{ token.allowed_ip|default:'не ограничен' }}</small>
+                        <small>Последнее использование: {{ token.last_used_at|default:'ещё не использовался' }}</small>
+                    </div>
+
+                    <form method="post" action="{% url 'panel:api_token_delete' token.pk %}">
+                        {% csrf_token %}
+                        <button class="panel-small-danger" type="submit">
+                            Удалить ключ
+                        </button>
+                    </form>
+                </article>
+            {% empty %}
+                <div class="panel-empty">
+                    <h3>API-ключей пока нет</h3>
+                    <p>Создай первый ключ для будущего серверного C#-агента.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Текст для нового чата по C#-скрипту</h2>
+            <p>Скопируй этот текст в отдельный чат, чтобы он понял архитектуру.</p>
+        </div>
+
+        <div class="copy-context-box">
+            <pre>Я делаю проект WertxRust: сайт на Django и отдельный Rust-сервер. Мне нужен локальный C# серверный агент/скрипт для Rust, который будет взаимодействовать с Django-сайтом.
+
+Архитектура сайта:
+- Главный идентификатор игрока: SteamID64.
+- Django хранит SteamProfile.
+- У SteamProfile есть:
+  - steam_id
+  - nickname
+  - last_known_ip — IP входа на сайт
+  - last_server_ip — последний IP входа на Rust-сервер
+  - last_seen_on_server_at — последний вход на Rust-сервер
+  - project_role
+  - balance_rub
+- Для серверных входов есть модель ServerPlayerConnection:
+  - profile
+  - server
+  - server_ip
+  - nickname_at_moment
+  - first_seen_at
+  - last_seen_at
+  - connections_count
+  - raw_payload
+- На сайте есть ServerApiToken:
+  - name
+  - server
+  - token
+  - is_active
+  - allowed_ip
+  - last_used_at
+
+Мне нужен C# агент, который:
+1. Работает рядом с Rust-сервером.
+2. Отслеживает вход игрока.
+3. Получает SteamID64, ник игрока, IP игрока на сервере, ID/название сервера.
+4. Отправляет POST-запрос на Django API с API-токеном.
+5. Django должен обновить или создать SteamProfile, создать/обновить ServerPlayerConnection и обновить last_server_ip у игрока.
+6. В будущем агент должен принимать команды с сайта: муты, варны, проверки, выдача покупок, привилегии и киты.
+7. Нужна безопасная структура: API-токен в заголовке, проверка IP сервера, логирование ошибок, повторная отправка при сбоях.
+
+Помоги спроектировать C# агент и Django API endpoints для этого.</pre>
+        </div>
+    </div>
+</section>
+{% endblock %}

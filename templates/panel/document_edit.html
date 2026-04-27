@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование документа — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">EDIT DOCUMENT</div>
+            <h1>Редактирование документа</h1>
+            <p>{{ document.name }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:documents' %}">
+            Назад к документам
+        </a>
+    </div>
+
+    <form class="panel-form-card single document-edit-form" method="post">
+        {% csrf_token %}
+
+        <h2>{{ document.name }}</h2>
+        <p>
+            Измени название, заголовок, адрес или текст документа.
+        </p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Сохранить изменения
+        </button>
+    </form>
+</section>
+{% endblock %}

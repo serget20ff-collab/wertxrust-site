@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Документы — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">DOCUMENTS</div>
+            <h1>Документы сайта</h1>
+            <p>
+                Здесь создаются и редактируются документы проекта: оферта,
+                политика конфиденциальности, правила, возвраты и другие тексты.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <form class="panel-form-card single" method="post">
+        {% csrf_token %}
+
+        <h2>Создать документ</h2>
+        <p>
+            Типов больше нет. Заполни название, заголовок и текст документа.
+        </p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Создать документ
+        </button>
+    </form>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Список документов</h2>
+            <p>Опубликованные документы видны пользователям в разделе “Документы”.</p>
+        </div>
+
+        <div class="documents-admin-grid">
+            {% for document in documents %}
+                <article class="document-admin-card">
+                    <div>
+                        <span>
+                            {% if document.is_published %}
+                                Опубликован
+                            {% else %}
+                                Скрыт
+                            {% endif %}
+                        </span>
+
+                        <h3>{{ document.name }}</h3>
+                        <p>{{ document.title }}</p>
+
+                        <small>/legal/{{ document.slug }}/</small>
+                    </div>
+
+                    <div class="document-admin-actions">
+                        <a class="main-button dark" href="{% url 'panel:document_edit' document.pk %}">
+                            Изменить
+                        </a>
+
+                        {% if document.is_published %}
+                            <a class="main-button primary" href="{% url 'core:legal_detail' document.slug %}" target="_blank" rel="noopener">
+                                Открыть
+                            </a>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'panel:document_delete' document.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="panel-empty">
+                    <h3>Документов пока нет</h3>
+                    <p>Создай первый документ через форму выше.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

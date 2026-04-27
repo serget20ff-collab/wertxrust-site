@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Поддержка — WertxRust{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <aside class="account-sidebar">
+        <div class="account-big-avatar">
+            {% if request.user.steam_profile.avatar_full %}
+                <img src="{{ request.user.steam_profile.avatar_full }}" alt="">
+            {% else %}
+                <span>W</span>
+            {% endif %}
+        </div>
+
+        <strong>{{ request.user.steam_profile.nickname|default:'Игрок' }}</strong>
+        <small>{{ request.user.steam_profile.steam_id }}</small>
+
+        <nav>
+            <a href="{% url 'accounts:wallet' %}">Кошелёк</a>
+            <a href="{% url 'accounts:purchases' %}">Список покупок</a>
+            <a class="active" href="{% url 'accounts:support' %}">Поддержка</a>
+            <a class="danger" href="{% url 'accounts:logout' %}">Выйти</a>
+        </nav>
+    </aside>
+
+    <div class="account-content">
+        <h1>Поддержка</h1>
+
+        <div class="panel-empty">
+            <h3>Поддержка через Discord</h3>
+            <p>Пока обращения принимаются в Discord. Позже здесь появится система тикетов.</p>
+
+            <a class="main-button primary" href="{{ DISCORD_URL }}" target="_blank" rel="noopener">
+                Перейти в Discord
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

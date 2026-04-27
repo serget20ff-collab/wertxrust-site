@@ -1,1 +1,32 @@
-{% extends 'base.html' %}{% block title %}Документы — WertxRust{% endblock %}{% block content %}<section class="page-wrap"><h1>Документы</h1><div class="cards-list">{% for doc in docs %}<a class="wide-card" href="{% url 'core:legal_detail' doc.doc_type %}"><h2>{{ doc.title }}</h2><p>Обновлено: {{ doc.updated_at }}</p></a>{% empty %}<div class="glass-card">Документы пока не добавлены.</div>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Документы — WertxRust{% endblock %}
+
+{% block content %}
+<section class="page-wrap">
+    <div class="section-kicker">ДОКУМЕНТЫ</div>
+    <h1>Документы проекта</h1>
+
+    <p class="lead">
+        Здесь размещены правила, соглашения и юридическая информация проекта WertxRust.
+    </p>
+
+    <div class="cards-list">
+        {% for doc in docs %}
+            <a class="wide-card" href="{% url 'core:legal_detail' doc.slug %}">
+                <div>
+                    <h3>{{ doc.name }}</h3>
+                    <p>{{ doc.title }}</p>
+                </div>
+
+                <span class="tag">Открыть</span>
+            </a>
+        {% empty %}
+            <div class="glass-card">
+                <h3>Документы пока не добавлены</h3>
+                <p>Документы появятся здесь после публикации в панели управления.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

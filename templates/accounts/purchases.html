@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Покупки — WertxRust{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <aside class="account-sidebar">
+        <div class="account-big-avatar">
+            {% if request.user.steam_profile.avatar_full %}
+                <img src="{{ request.user.steam_profile.avatar_full }}" alt="">
+            {% else %}
+                <span>W</span>
+            {% endif %}
+        </div>
+
+        <strong>{{ request.user.steam_profile.nickname|default:'Игрок' }}</strong>
+        <small>{{ request.user.steam_profile.steam_id }}</small>
+
+        <nav>
+            <a href="{% url 'accounts:wallet' %}">Кошелёк</a>
+            <a class="active" href="{% url 'accounts:purchases' %}">Список покупок</a>
+            <a href="{% url 'accounts:support' %}">Поддержка</a>
+            <a class="danger" href="{% url 'accounts:logout' %}">Выйти</a>
+        </nav>
+    </aside>
+
+    <div class="account-content">
+        <h1>Список покупок</h1>
+
+        <div class="panel-empty">
+            <h3>Покупок пока нет</h3>
+            <p>После оформления заказа здесь появится история покупок и статус выдачи.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

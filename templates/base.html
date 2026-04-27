@@ -1,4 +1,199 @@
 {% load static %}
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}{{ SITE_NAME }}{% endblock %}</title><link rel="stylesheet" href="{% static 'css/site.css' %}"></head>
-<body><div class="bg-orb bg-orb-a"></div><div class="bg-orb bg-orb-b"></div><header class="site-header"><a class="brand" href="{% url 'core:home' %}"><span class="brand-mark">W</span><span class="brand-text">WertxRust</span></a><nav class="nav"><a href="{% url 'servers:server_list' %}">Сервера</a><a href="{% url 'shop:shop_index' %}">Магазин</a><a href="{% url 'rules:rules_index' %}">Правила</a><a href="{% url 'news:news_list' %}">Новости</a><a href="{{ DISCORD_URL }}" target="_blank" rel="noopener">Discord</a></nav><div class="header-actions">{% if request.user.is_authenticated and request.user.steam_profile %}<a class="profile-pill" href="{% url 'accounts:profile' %}">{% if request.user.steam_profile.avatar_medium %}<img src="{{ request.user.steam_profile.avatar_medium }}" alt="">{% endif %}<span>{{ request.user.steam_profile.nickname|default:request.user.steam_profile.steam_id }}</span></a>{% else %}<a class="btn btn-ghost" href="{% url 'accounts:steam_login' %}">Войти через Steam</a>{% endif %}</div></header>
-{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}<main>{% block content %}{% endblock %}</main><footer class="footer"><div>© WertxRust</div><div class="footer-links"><a href="{% url 'core:legal_index' %}">Документы</a><a href="{{ DISCORD_URL }}" target="_blank" rel="noopener">Discord</a></div></footer></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=5">
+    <script src="{% static 'js/site.js' %}?v=5" defer></script>
+</head>
+
+<body>
+    <div class="cursor-glow" id="cursorGlow"></div>
+    <div class="page-gradient"></div>
+    <div class="grid-layer"></div>
+    <div class="noise-layer"></div>
+
+    <aside class="side-nav">
+        <a class="side-logo magnetic" href="{% url 'core:home' %}" aria-label="WertxRust">
+            <span>W</span>
+        </a>
+
+        <nav class="side-menu">
+            <a class="side-link active magnetic" href="{% url 'core:home' %}" title="Главная" aria-label="Главная">
+                <svg viewBox="0 0 24 24"><path d="M4 10.8 12 4l8 6.8v8.7a.5.5 0 0 1-.5.5h-5v-5.8h-5V20h-5a.5.5 0 0 1-.5-.5v-8.7Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic" href="{% url 'servers:server_list' %}" title="Серверы" aria-label="Серверы">
+                <svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm1.5 3.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM5 14h14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2Zm1.5 2.3a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic" href="{% url 'shop:shop_index' %}" title="Магазин" aria-label="Магазин">
+                <svg viewBox="0 0 24 24"><path d="M8 8V7a4 4 0 0 1 8 0v1h2.2a1 1 0 0 1 1 .9l.8 10a2 2 0 0 1-2 2.1H6a2 2 0 0 1-2-2.1l.8-10a1 1 0 0 1 1-.9H8Zm2 0h4V7a2 2 0 1 0-4 0v1Zm-1 4.2a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm6 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic" href="{% url 'rules:rules_index' %}" title="Правила" aria-label="Правила">
+                <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 1.8V8h3.2L13 4.8ZM8 11h8v1.8H8V11Zm0 4h8v1.8H8V15Z"/></svg>
+            </a>
+        </nav>
+
+        <nav class="side-socials">
+            <a class="side-link magnetic" href="{{ DISCORD_URL }}" target="_blank" rel="noopener" title="Discord" aria-label="Discord">
+                <svg viewBox="0 0 24 24"><path d="M8.2 8.6c1.2-.6 2.4-.8 3.8-.8s2.6.2 3.8.8c1.8 2.4 2.5 5.1 2.3 8.1-1.3 1-2.6 1.5-4 1.8l-.7-1.2c.8-.2 1.5-.6 2.1-1-1.8.8-4.1.8-5.9 0 .7.5 1.4.8 2.1 1l-.7 1.2c-1.4-.3-2.8-.9-4-1.8-.3-3 .5-5.7 2.2-8.1Zm2.1 5.2c.7 0 1.2-.6 1.2-1.3s-.5-1.3-1.2-1.3-1.2.6-1.2 1.3.5 1.3 1.2 1.3Zm3.4 0c.7 0 1.2-.6 1.2-1.3s-.5-1.3-1.2-1.3-1.2.6-1.2 1.3.5 1.3 1.2 1.3Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic" href="#" title="Telegram" aria-label="Telegram">
+                <svg viewBox="0 0 24 24"><path d="M21 4.7 17.9 20c-.2.9-.8 1.1-1.6.7l-4.5-3.3-2.1 2c-.2.2-.4.4-.9.4l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L6.5 14 2 12.6c-1-.3-1-.9.2-1.3L19.7 4c.8-.3 1.5.2 1.3.7Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic" href="#" title="YouTube" aria-label="YouTube">
+                <svg viewBox="0 0 24 24"><path d="M21.3 7.2a3 3 0 0 0-2.1-2.1C17.3 4.6 12 4.6 12 4.6s-5.3 0-7.2.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2.2 12c0 1.7.1 3.4.5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.2.5 7.2.5s5.3 0 7.2-.5a3 3 0 0 0 2.1-2.1c.4-1.4.5-3.1.5-4.8s-.1-3.4-.5-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z"/></svg>
+            </a>
+        </nav>
+    </aside>
+
+    <header class="top-header" id="topHeader">
+        <a class="top-brand" href="{% url 'core:home' %}">
+            <span class="top-brand-main">WERTX</span>
+            <span class="top-brand-sub">RUST</span>
+        </a>
+
+        <div class="top-auth">
+            {% if request.user.is_authenticated and request.user.steam_profile %}
+                <div class="account-bar">
+                    <button class="wallet-button magnetic" type="button" aria-label="Баланс">
+                        <span>{{ request.user.steam_profile.balance_rub|floatformat:0 }} ₽</span>
+                    </button>
+
+                    <button class="wallet-add-button" type="button" data-open-topup aria-label="Пополнить баланс">
+                        +
+                    </button>
+
+                    <div class="account-menu" data-dropdown>
+                        <button class="account-avatar-button" type="button" data-dropdown-button aria-label="Открыть меню аккаунта">
+                            {% if request.user.steam_profile.avatar_full %}
+                                <img src="{{ request.user.steam_profile.avatar_full }}" alt="{{ request.user.steam_profile.nickname }}">
+                            {% elif request.user.steam_profile.avatar_medium %}
+                                <img src="{{ request.user.steam_profile.avatar_medium }}" alt="{{ request.user.steam_profile.nickname }}">
+                            {% else %}
+                                <span>W</span>
+                            {% endif %}
+                        </button>
+
+                        <div class="account-dropdown">
+                            <div class="account-dropdown-head">
+                                <div class="account-dropdown-avatar">
+                                    {% if request.user.steam_profile.avatar_full %}
+                                        <img src="{{ request.user.steam_profile.avatar_full }}" alt="">
+                                    {% elif request.user.steam_profile.avatar_medium %}
+                                        <img src="{{ request.user.steam_profile.avatar_medium }}" alt="">
+                                    {% else %}
+                                        <span>W</span>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    <strong>{{ request.user.steam_profile.nickname|default:'Игрок' }}</strong>
+                                    <small>{{ request.user.steam_profile.steam_id }}</small>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'accounts:wallet' %}">
+                                <svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H19a1 1 0 0 1 1 1v2h-3.5A3.5 3.5 0 0 0 13 11.5v1A3.5 3.5 0 0 0 16.5 16H20v2a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 16.5v-9Zm12.5 2H21v5h-4.5A1.5 1.5 0 0 1 15 13v-2a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+                                Кошелёк
+                            </a>
+
+                            <a href="{% url 'accounts:purchases' %}">
+                                <svg viewBox="0 0 24 24"><path d="M8 8V7a4 4 0 0 1 8 0v1h2a1 1 0 0 1 1 .92l.8 10A2 2 0 0 1 17.8 21H6.2a2 2 0 0 1-2-2.08l.8-10A1 1 0 0 1 6 8h2Zm2 0h4V7a2 2 0 1 0-4 0v1Z"/></svg>
+                                Список покупок
+                            </a>
+
+                            <a href="{% url 'accounts:support' %}">
+                                <svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7v3.6A3 3 0 0 0 7 16.43V11a5 5 0 0 1 10 0v5.43a3 3 0 0 0 2-2.83V10a7 7 0 0 0-7-7Zm-2 12H8v-4h2v4Zm6 0h-2v-4h2v4Z"/></svg>
+                                Поддержка
+                            </a>
+
+                            {% if request.user.is_staff or request.user.is_superuser or request.user.steam_profile.is_project_staff or request.user.steam_profile.can_access_panel %}
+                                <div class="account-dropdown-line"></div>
+
+                                <a class="admin-link" href="/panel/">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Zm1 5v5h4v2h-6V7h2Z"/></svg>
+                                    Администрирование
+                                </a>
+
+                                {% if request.user.is_staff or request.user.is_superuser %}
+                                    <a class="admin-link" href="/wr-control/">
+                                        <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm4 2v2h8V7H8Zm0 4v2h8v-2H8Zm0 4v2h5v-2H8Z"/></svg>
+                                        Тех. панель
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+
+                            <div class="account-dropdown-line"></div>
+
+                            <a class="danger" href="{% url 'accounts:logout' %}">
+                                Выйти
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a class="steam-login-button" href="{% url 'accounts:steam_login' %}">
+                    Войти через Steam
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+<footer class="site-footer">
+    <div>
+        <strong>WERTX RUST</strong>
+        <p>Игровой проект серверов Rust.</p>
+
+        <div class="footer-legal-info">
+            <p>
+                Самозанятый Шорин Сергей Дмитриевич
+            </p>
+            <p>
+                ИНН: 971520962260
+            </p>
+            <p>
+                Поддержка: <a href="mailto:support@wertxrust.ru">support@wertxrust.ru</a>
+            </p>
+            <p>
+                WertxRust не является аффилированным лицом Facepunch Studios Ltd. и Valve Corporation.
+                Все товарные знаки принадлежат их правообладателям.
+            </p>
+        </div>
+    </div>
+
+    <div class="footer-links">
+        <a href="{% url 'rules:rules_index' %}">Правила</a>
+        <a href="{% url 'core:legal_index' %}">Документы</a>
+        <a href="{{ DISCORD_URL }}" target="_blank" rel="noopener">Discord</a>
+    </div>
+</footer>
+
+    <div class="modal-backdrop" data-modal-backdrop hidden>
+        <div class="topup-modal">
+            <button class="modal-close" type="button" data-close-topup aria-label="Закрыть">×</button>
+
+            <div class="section-kicker">ПОПОЛНЕНИЕ</div>
+            <h2>Пополнение баланса</h2>
+            <p>
+                Платёжная система пока не подключена.
+                Позже здесь появится ЮKassa и выбор суммы пополнения.
+            </p>
+
+            <button class="main-button dark" type="button" data-close-topup>
+                Понятно
+            </button>
+        </div>
+    </div>
+</body>
+</html>																																	

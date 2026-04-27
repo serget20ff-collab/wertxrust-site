@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Жалобы и тикеты — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">REPORTS</div>
+            <h1>Жалобы и тикеты</h1>
+            <p>
+                Пока обращения игроков ведутся через Discord. Позже здесь появится
+                собственная система тикетов и история решений.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="panel-empty">
+        <h3>Discord — основной канал поддержки</h3>
+        <p>
+            Жалобы, обращения и спорные ситуации пока направляются в Discord.
+            Это быстрее на старте проекта.
+        </p>
+
+        <a class="main-button primary" href="https://discord.gg/wertxrust" target="_blank" rel="noopener">
+            Открыть Discord
+        </a>
+    </div>
+</section>
+{% endblock %}

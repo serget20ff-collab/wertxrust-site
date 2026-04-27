@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">
+                {% if page_mode == 'check' %}
+                    PLAYER CHECK
+                {% else %}
+                    PLAYER DATABASE
+                {% endif %}
+            </div>
+
+            <h1>{{ title }}</h1>
+            <p>{{ description }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <form class="panel-search" method="get">
+        <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="{% if page_mode == 'check' %}Steam ID, ник или серверный IP{% else %}Steam ID, ник, серверный IP или роль{% endif %}"
+        >
+
+        <button class="main-button primary" type="submit">
+            Найти
+        </button>
+    </form>
+
+    {% if page_mode == 'check' %}
+        {% if found_profile %}
+            <div class="panel-highlight">
+                <div>
+                    <span>Найден Steam ID</span>
+                    <h3>{{ found_profile.nickname|default:found_profile.steam_id }}</h3>
+                    <p>{{ found_profile.steam_id }}</p>
+                </div>
+
+                <div>
+                    <span>Сайт</span>
+                    <h3>{{ found_profile.last_known_ip|default:'IP сайта не найден' }}</h3>
+                    <p>Этот IP не используется для серверных связок.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="panel-block">
+            <div class="panel-block-head">
+                <h2>Серверные подключения</h2>
+                <p>IP из игрового сервера. Именно по нему строятся связи игроков.</p>
+            </div>
+
+            <div class="panel-table">
+                <div class="panel-table-head player-check-table">
+                    <span>Steam ID</span>
+                    <span>Ник</span>
+                    <span>Серверный IP</span>
+                    <span>Сервер</span>
+                    <span>Последний вход</span>
+                </div>
+
+                {% for connection in connections %}
+                    <div class="panel-table-row player-check-table">
+                        <span>{{ connection.profile.steam_id }}</span>
+                        <span>{{ connection.nickname_at_moment|default:connection.profile.nickname|default:'—' }}</span>
+                        <span>{{ connection.server_ip }}</span>
+                        <span>{{ connection.server.name|default:'—' }}</span>
+                        <span>{{ connection.last_seen_at|default:connection.updated_at|default:'—' }}</span>
+                    </div>
+                {% empty %}
+                    <div class="panel-table-empty">
+                        Серверных подключений пока нет.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if linked_connections %}
+            <div class="panel-block">
+                <div class="panel-block-head">
+                    <h2>Связанные игроки по IP</h2>
+                    <p>Другие Steam ID, которые заходили на сервер с теми же IP.</p>
+                </div>
+
+                <div class="panel-table">
+                    <div class="panel-table-head player-check-table">
+                        <span>Steam ID</span>
+                        <span>Ник</span>
+                        <span>Общий IP</span>
+                        <span>Сервер</span>
+                        <span>Последний вход</span>
+                    </div>
+
+                    {% for connection in linked_connections %}
+                        <div class="panel-table-row player-check-table">
+                            <span>{{ connection.profile.steam_id }}</span>
+                            <span>{{ connection.nickname_at_moment|default:connection.profile.nickname|default:'—' }}</span>
+                            <span>{{ connection.server_ip }}</span>
+                            <span>{{ connection.server.name|default:'—' }}</span>
+                            <span>{{ connection.last_seen_at|default:connection.updated_at|default:'—' }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if page_mode == 'full' %}
+        <div class="panel-block">
+            <div class="panel-block-head">
+                <h2>База игроков</h2>
+                <p>Полная информация по Steam-профилям. Этот раздел только для разработчиков и старших ролей.</p>
+            </div>
+
+            <div class="panel-table">
+<div class="panel-table-head player-database-table">
+    <span>Steam ID</span>
+    <span>Ник</span>
+    <span>Роль</span>
+    <span>IP сервера</span>
+    <span>Последний вход</span>
+</div>
+
+                {% for player in players %}
+<div class="panel-table-row player-database-table">
+    <span>{{ player.steam_id }}</span>
+    <span>{{ player.nickname|default:'—' }}</span>
+    <span>{{ player.get_project_role_display }}</span>
+    <span>{{ player.last_server_ip|default:'—' }}</span>
+    <span>{{ player.last_seen_on_server_at|default:player.last_seen_at|default:'—' }}</span>
+</div>
+                {% empty %}
+                    <div class="panel-table-empty">
+                        Игроки не найдены.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

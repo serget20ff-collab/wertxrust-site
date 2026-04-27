@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Магазин — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">SHOP CONTROL</div>
+            <h1>Магазин</h1>
+            <p>
+                Настрой категории, товары, цены, скидки и отображение на главной.
+                Состав предметов используется только для типа “Кит”.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="panel-forms-grid">
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="category">
+
+            <h2>Добавить категорию</h2>
+            <p>Категории — это вкладки магазина, которые видит покупатель.</p>
+
+            <div class="panel-form-grid">
+                {{ category_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать категорию
+            </button>
+        </form>
+
+        <form class="panel-form-card" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="product">
+
+            <h2>Добавить товар</h2>
+            <p>
+                Тип товара влияет на окно товара. Для кита можно заполнить состав,
+                для остальных типов состав скрывается и не используется.
+            </p>
+
+            <div class="panel-form-grid product-form-grid">
+                {{ product_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать товар
+            </button>
+        </form>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Категории</h2>
+            <p>Появляются как фильтры на странице магазина.</p>
+        </div>
+
+        <div class="panel-table">
+            <div class="panel-table-head simple-5">
+                <span>Название</span>
+                <span>Slug</span>
+                <span>Активна</span>
+                <span>Иконка</span>
+                <span>Действие</span>
+            </div>
+
+            {% for category in categories %}
+                <div class="panel-table-row simple-5">
+                    <span>{{ category.name }}</span>
+                    <span>{{ category.slug }}</span>
+                    <span>{% if category.is_active %}Да{% else %}Нет{% endif %}</span>
+                    <span>{{ category.icon|default:'—' }}</span>
+                    <span>
+                        <form method="post" action="{% url 'panel:category_delete' category.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">Удалить</button>
+                        </form>
+                    </span>
+                </div>
+            {% empty %}
+                <div class="panel-table-empty">Категорий пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Товары</h2>
+            <p>Активные товары отображаются в магазине. Отмеченные “на главной” появятся в блоке популярных товаров.</p>
+        </div>
+
+        <div class="panel-table">
+            <div class="panel-table-head shop-table">
+                <span>Название</span>
+                <span>Категория</span>
+                <span>Тип</span>
+                <span>Цена</span>
+                <span>Действие</span>
+            </div>
+
+            {% for product in products %}
+                <div class="panel-table-row shop-table">
+                    <span>
+                        {{ product.name }}
+                        {% if product.is_featured %}
+                            <small class="panel-inline-badge">главная</small>
+                        {% endif %}
+                    </span>
+
+                    <span>{{ product.category.name|default:'—' }}</span>
+                    <span>{{ product.get_product_type_display }}</span>
+
+                    <span>
+                        {% if product.has_discount %}
+                            <del>{{ product.old_price_rub|floatformat:0 }} ₽</del>
+                            {{ product.price_rub|floatformat:0 }} ₽
+                        {% else %}
+                            {{ product.price_rub|floatformat:0 }} ₽
+                        {% endif %}
+                    </span>
+
+                    <span>
+                        <form method="post" action="{% url 'panel:product_delete' product.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">Удалить</button>
+                        </form>
+                    </span>
+                </div>
+            {% empty %}
+                <div class="panel-table-empty">Товаров пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,4 +1,168 @@
-{% extends 'base.html' %}{% block title %}WertxRust — Rust серверы нового уровня{% endblock %}{% block content %}
-<section class="hero"><div class="hero-content"><div class="eyebrow">VANILLA+ • X2 • NEON RUST PROJECT</div><h1>Твой новый центр выживания в Rust</h1><p>WertxRust — проект игровых серверов с честной экономикой, активным Discord, магазином привилегий и удобным личным кабинетом через Steam.</p><div class="hero-actions"><a class="btn btn-primary" href="steam://connect/wertxrust.ru:28015">Подключиться</a><a class="btn btn-secondary" href="{{ DISCORD_URL }}" target="_blank" rel="noopener">Discord</a><a class="btn btn-ghost" href="{% url 'shop:shop_index' %}">Магазин</a></div></div><div class="hero-card"><div class="logo-card"><span>W</span></div><div class="status-row"><span>Первый сервер</span><b>Vanilla+ x2</b></div><div class="status-row"><span>Карта</span><b>4000</b></div><div class="status-row"><span>Вайп</span><b>Скоро</b></div><div class="copy-box">connect wertxrust.ru:28015</div></div></section>
-<section class="section-grid"><a class="feature-card" href="{% url 'servers:server_list' %}"><h3>Сервера</h3><p>Онлайн, вайпы, параметры и быстрый коннект.</p></a><a class="feature-card" href="{% url 'shop:shop_index' %}"><h3>Магазин</h3><p>Привилегии, косметика и будущая интеграция с ЮKassa.</p></a><a class="feature-card" href="{% url 'rules:rules_index' %}"><h3>Правила</h3><p>Понятные правила сервера, Discord и покупок.</p></a></section>
-<section class="content-section"><div class="section-title"><h2>Новости</h2><a href="{% url 'news:news_list' %}">Все новости</a></div><div class="cards-3">{% for post in news_posts %}<article class="glass-card"><span class="tag">{{ post.get_post_type_display }}</span><h3>{{ post.title }}</h3><p>{{ post.excerpt }}</p></article>{% empty %}<article class="glass-card"><span class="tag">Старт</span><h3>Скоро открытие</h3><p>Следи за Discord и новостями проекта.</p></article>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}WertxRust — Rust серверы и магазин{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="hero-left">
+        <div class="project-pill">WERTX RUST PROJECT</div>
+
+        <h1>
+            Играй с кайфом на
+            <span>WERTX RUST</span>
+        </h1>
+
+        <p class="hero-text">
+            Rust-проект с честными вайпами, удобным магазином, активным Discord
+            и понятной системой поддержки игроков.
+        </p>
+
+        <p class="hero-text second">
+            Заходи через Steam, выбирай сервер, следи за обновлениями и будь
+            готов к первому полноценному запуску проекта.
+        </p>
+
+        <div class="hero-actions">
+            <a class="main-button primary" href="{% url 'servers:server_list' %}">
+                Перейти к серверам
+            </a>
+            <a class="main-button dark" href="{{ DISCORD_URL }}" target="_blank" rel="noopener">
+                Discord
+            </a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="mini-stat">
+                <strong>24/7</strong>
+                <span>Поддержка проекта</span>
+            </div>
+
+            <div class="mini-stat">
+                <strong>x2</strong>
+                <span>Комфортный темп игры</span>
+            </div>
+
+            <div class="mini-stat">
+                <strong>SOON</strong>
+                <span>Готовим первый сервер</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <div class="server-preview-window">
+            <div class="window-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            {% for server in servers %}
+                <div class="server-preview-card home-server-preview-card">
+                    <div>
+                        <h3>{{ server.name }}</h3>
+                        <p>{{ server.server_type }} · {{ server.rates }} · карта {{ server.map_size }}</p>
+                        <strong>
+                            {% if server.connection_address %}
+                                {{ server.connection_address }}
+                            {% else %}
+                                IP скоро появится
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="soon-badge">LIVE</div>
+                </div>
+            {% empty %}
+                <div class="server-preview-card home-server-preview-card">
+                    <div>
+                        <h3>WertxRust Main</h3>
+                        <p>Vanilla+ · x2 · Procedural Map</p>
+                        <strong>готовим первый сервер</strong>
+                    </div>
+
+                    <div class="soon-badge">SOON</div>
+                </div>
+            {% endfor %}
+
+            <div class="server-preview-status">
+                <span class="status-dot"></span>
+                <p>Следи за запуском проекта в Discord</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-shop">
+    <div class="section-kicker">МАГАЗИН</div>
+    <h2>Популярные товары</h2>
+    <p class="section-description">
+        Наборы, привилегии и игровые товары для комфортной игры на WertxRust.
+    </p>
+
+    <div class="home-product-grid">
+        {% for product in featured_products %}
+            <a class="home-product-card" href="{% url 'shop:shop_index' %}">
+                {% if product.has_discount %}
+                    <span class="discount-badge">-{{ product.discount_percent }}%</span>
+                {% endif %}
+
+                <div class="home-product-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <span>W</span>
+                    {% endif %}
+                </div>
+
+                <div class="home-product-info">
+                    <small>{{ product.get_product_type_display }}</small>
+                    <strong>{{ product.name }}</strong>
+
+                    <div class="shop-price">
+                        {% if product.has_discount %}
+                            <del>{{ product.old_price_rub|floatformat:0 }} ₽</del>
+                        {% endif %}
+                        <b>{{ product.price_rub|floatformat:0 }} ₽</b>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <a class="home-product-card placeholder" href="{% url 'shop:shop_index' %}">
+                <div class="home-product-image">
+                    <span>W</span>
+                </div>
+
+                <div class="home-product-info">
+                    <small>СКОРО</small>
+                    <strong>Магазин скоро откроется</strong>
+                    <div class="shop-price">
+                        <b>Перейти</b>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="home-news">
+    <div class="section-kicker">НОВОСТИ</div>
+    <h2>Последние обновления</h2>
+
+    <div class="news-grid">
+        {% for post in news_posts %}
+            <article class="news-card">
+                <span>{{ post.get_post_type_display }}</span>
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.excerpt }}</p>
+            </article>
+        {% empty %}
+            <article class="news-card">
+                <span>СТАРТ</span>
+                <h3>Готовим Discord и первый сервер</h3>
+                <p>Скоро здесь появятся новости проекта, даты вайпов и важные объявления для игроков.</p>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

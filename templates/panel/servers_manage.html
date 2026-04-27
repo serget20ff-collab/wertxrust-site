@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Серверы — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero compact-title">
+        <div>
+            <div class="section-kicker">SERVER CONTROL</div>
+            <h1>Серверы</h1>
+            <p>
+                Здесь настраиваются серверы проекта. IP и порт автоматически
+                формируют адрес подключения и команду Steam.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <form class="panel-form-card single" method="post">
+        {% csrf_token %}
+        <h2>Добавить сервер</h2>
+        <p>
+            Включи “Показывать на странице серверов”, чтобы сервер появился во вкладке серверов.
+            Включи “Показывать на главной”, чтобы он появился в правом блоке на главной странице.
+        </p>
+
+        <div class="panel-form-grid">
+            {{ server_form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Создать сервер
+        </button>
+    </form>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Список серверов</h2>
+            <p>Карточки подстраиваются под текст и не растягиваются на весь экран.</p>
+        </div>
+
+        <div class="server-admin-grid">
+            {% for server in servers %}
+                <article class="server-admin-card">
+                    <div>
+                        <span>{{ server.server_type }}</span>
+                        <h3>{{ server.name }}</h3>
+                        <p>{{ server.description|default:'Описание сервера пока не добавлено.' }}</p>
+                    </div>
+
+                    <div class="server-admin-meta">
+                        <b>
+                            {% if server.connection_address %}
+                                {{ server.connection_address }}
+                            {% else %}
+                                IP не задан
+                            {% endif %}
+                        </b>
+
+                        <small>
+                            {{ server.rates }} · карта {{ server.map_size }} · {{ server.max_players }} слотов
+                        </small>
+                    </div>
+
+                    <div class="server-visibility-tags">
+                        {% if server.is_public %}
+                            <span>На странице серверов</span>
+                        {% endif %}
+
+                        {% if server.show_on_home %}
+                            <span>На главной</span>
+                        {% endif %}
+
+                        {% if not server.is_public and not server.show_on_home %}
+                            <span class="muted-tag">Скрыт</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="server-admin-actions">
+                        {% if server.connection_address %}
+                            <button
+                                class="main-button dark"
+                                type="button"
+                                data-copy="{{ server.connection_address }}"
+                            >
+                                Копировать IP
+                            </button>
+
+                            <button
+                                class="main-button primary"
+                                type="button"
+                                data-connect="{{ server.connection_address }}"
+                            >
+                                Подключиться
+                            </button>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'panel:server_delete' server.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="panel-empty">
+                    <h3>Серверов пока нет</h3>
+                    <p>Создай первый сервер через форму выше.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Последние серверные подключения</h2>
+            <p>Эти данные позже будет автоматически отправлять C# скрипт с сервера.</p>
+        </div>
+
+        <div class="panel-table">
+            <div class="panel-table-head player-check-table">
+                <span>Steam ID</span>
+                <span>Ник</span>
+                <span>Серверный IP</span>
+                <span>Сервер</span>
+                <span>Последний вход</span>
+            </div>
+
+            {% for connection in connections %}
+                <div class="panel-table-row player-check-table">
+                    <span>{{ connection.profile.steam_id }}</span>
+                    <span>{{ connection.nickname_at_moment|default:connection.profile.nickname|default:'—' }}</span>
+                    <span>{{ connection.server_ip }}</span>
+                    <span>{{ connection.server.name|default:'—' }}</span>
+                    <span>{{ connection.last_seen_at|default:connection.updated_at|default:'—' }}</span>
+                </div>
+            {% empty %}
+                <div class="panel-table-empty">Подключений пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

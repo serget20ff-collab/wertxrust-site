@@ -1,1 +1,79 @@
-{% extends 'base.html' %}{% block title %}Сервера — WertxRust{% endblock %}{% block content %}<section class="page-wrap"><h1>Сервера WertxRust</h1><div class="cards-list">{% for server in servers %}<article class="wide-card"><div><span class="tag">{{ server.server_type }}</span><h2>{{ server.name }}</h2><p>{{ server.description }}</p></div><div class="server-meta"><b>{{ server.rates }}</b><span>Карта {{ server.map_size }}</span><span>{{ server.max_players }} слотов</span></div><div><div class="copy-box">{{ server.connect_command|default:server.ip }}</div></div></article>{% empty %}<div class="glass-card"><h2>Сервер скоро появится</h2><p>Добавь сервер через Django Admin.</p></div>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Серверы — WertxRust{% endblock %}
+
+{% block content %}
+<section class="servers-page">
+    <div class="servers-head">
+        <div>
+            <div class="section-kicker">СЕРВЕРЫ</div>
+            <h1>Серверы WertxRust</h1>
+            <p>
+                Выбирай режим, копируй IP или подключайся напрямую через Steam.
+                Все данные берутся из панели управления проектом.
+            </p>
+        </div>
+    </div>
+
+    <div class="server-admin-grid public-server-grid">
+        {% for server in servers %}
+            <article class="server-admin-card public-server-card">
+                <div>
+                    <span>{{ server.server_type }}</span>
+                    <h3>{{ server.name }}</h3>
+                    <p>{{ server.description|default:'Описание сервера скоро появится.' }}</p>
+                </div>
+
+                <div class="server-admin-meta">
+                    <b>
+                        {% if server.connection_address %}
+                            {{ server.connection_address }}
+                        {% else %}
+                            IP скоро появится
+                        {% endif %}
+                    </b>
+
+                    <small>
+                        {{ server.rates }} · карта {{ server.map_size }} · {{ server.max_players }} слотов
+                    </small>
+                </div>
+
+                <div class="server-admin-actions">
+                    {% if server.connection_address %}
+                        <button
+                            class="main-button dark"
+                            type="button"
+                            data-copy="{{ server.connection_address }}"
+                        >
+                            Копировать IP
+                        </button>
+
+                        <button
+                            class="main-button primary"
+                            type="button"
+                            data-connect="{{ server.connection_address }}"
+                        >
+                            Подключиться
+                        </button>
+                    {% else %}
+                        <button class="main-button dark" type="button" disabled>
+                            IP скоро
+                        </button>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="panel-empty">
+                <h3>Серверы скоро появятся</h3>
+                <p>
+                    Мы готовим первый сервер WertxRust. Следи за Discord и новостями проекта.
+                </p>
+
+                <a class="main-button primary" href="{{ DISCORD_URL }}" target="_blank" rel="noopener">
+                    Перейти в Discord
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

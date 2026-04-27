@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Команда — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">STAFF</div>
+            <h1>Команда проекта</h1>
+            <p>
+                Таблица сотрудников от самой высокой роли к младшим. Игроки без staff-роли
+                находятся в отдельной базе игроков и здесь не отображаются.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="staff-role-grid">
+        <a class="staff-role-card {% if not selected_role %}active{% endif %}" href="{% url 'panel:staff' %}">
+            <span>Все сотрудники</span>
+            <strong>Все</strong>
+        </a>
+
+        {% for role in role_cards %}
+            <a
+                class="staff-role-card {% if role.active %}active{% endif %}"
+                href="{% url 'panel:staff' %}?role={{ role.key }}"
+            >
+                <span>{{ role.count }} чел.</span>
+                <strong>{{ role.title }}</strong>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Сотрудники</h2>
+
+            {% if can_manage_staff %}
+                <p>
+                    Ты можешь менять роли и баланс сотрудников. Куратор не может изменять разработчиков
+                    и не может выдавать роль разработчика.
+                </p>
+            {% else %}
+                <p>
+                    Раздел доступен для просмотра. Изменять роли и баланс могут только куратор и разработчик.
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="staff-table">
+            <div class="staff-table-head">
+                <span>Сотрудник</span>
+                <span>Роль</span>
+                <span>Баланс</span>
+                <span>Steam ID</span>
+                <span>Действие</span>
+            </div>
+
+            {% for member in staff_members %}
+                <form class="staff-table-row" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="steam_id" value="{{ member.steam_id }}">
+
+                    <div class="staff-user-cell">
+                        <div class="staff-avatar">
+                            {% if member.avatar_full %}
+                                <img src="{{ member.avatar_full }}" alt="">
+                            {% elif member.avatar_medium %}
+                                <img src="{{ member.avatar_medium }}" alt="">
+                            {% else %}
+                                <span>W</span>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <strong>{{ member.nickname|default:'Без ника' }}</strong>
+                            <small>
+                                {% if member.last_server_ip %}
+                                    Rust IP: {{ member.last_server_ip }}
+                                {% else %}
+                                    Rust IP пока нет
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div>
+                        {% if can_manage_staff %}
+                            <select name="project_role">
+                                {% for role_key, role_title in roles %}
+                                    {% if role_key != 'player' %}
+                                        <option value="{{ role_key }}" {% if member.project_role == role_key %}selected{% endif %}>
+                                            {{ role_title }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <span class="staff-role-label">{{ member.get_project_role_display }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if can_manage_staff %}
+                            <input
+                                type="number"
+                                name="balance_rub"
+                                value="{{ member.balance_rub|floatformat:2 }}"
+                                step="0.01"
+                                min="0"
+                            >
+                        {% else %}
+                            <span>{{ member.balance_rub|floatformat:0 }} ₽</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="staff-steam-cell">
+                        <span>{{ member.steam_id }}</span>
+                    </div>
+
+                    <div>
+                        {% if can_manage_staff %}
+                            <button class="main-button primary staff-save-button" type="submit">
+                                Сохранить
+                            </button>
+                        {% else %}
+                            <span class="muted">Просмотр</span>
+                        {% endif %}
+                    </div>
+                </form>
+            {% empty %}
+                <div class="panel-table-empty">
+                    Сотрудников пока нет.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

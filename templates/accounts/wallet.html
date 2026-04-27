@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Кошелёк — WertxRust{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <aside class="account-sidebar">
+        <div class="account-big-avatar">
+            {% if request.user.steam_profile.avatar_full %}
+                <img src="{{ request.user.steam_profile.avatar_full }}" alt="">
+            {% else %}
+                <span>W</span>
+            {% endif %}
+        </div>
+
+        <strong>{{ request.user.steam_profile.nickname|default:'Игрок' }}</strong>
+        <small>{{ request.user.steam_profile.steam_id }}</small>
+
+        <nav>
+            <a class="active" href="{% url 'accounts:wallet' %}">Кошелёк</a>
+            <a href="{% url 'accounts:purchases' %}">Список покупок</a>
+            <a href="{% url 'accounts:support' %}">Поддержка</a>
+            <a class="danger" href="{% url 'accounts:logout' %}">Выйти</a>
+        </nav>
+    </aside>
+
+    <div class="account-content">
+        <h1>Кошелёк</h1>
+
+        <div class="wallet-grid">
+            <div class="wallet-card active">
+                <strong>{{ request.user.steam_profile.balance_rub|floatformat:0 }} ₽</strong>
+                <span>Баланс аккаунта</span>
+            </div>
+
+            <div class="wallet-card">
+                <strong>0,00 €</strong>
+                <span>Резервный счёт</span>
+            </div>
+        </div>
+
+        <button class="main-button primary" type="button" data-open-topup>
+            Пополнить баланс
+        </button>
+    </div>
+</section>
+{% endblock %}

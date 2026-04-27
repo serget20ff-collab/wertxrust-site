@@ -14,7 +14,7 @@ STEAM_RETURN_URL = os.getenv('STEAM_RETURN_URL', f'{SITE_URL}/auth/steam/callbac
 STEAM_REALM = os.getenv('STEAM_REALM', f'{SITE_URL}/')
 INSTALLED_APPS = [
     'django.contrib.admin','django.contrib.auth','django.contrib.contenttypes','django.contrib.sessions','django.contrib.messages','django.contrib.staticfiles',
-    'accounts','core','servers','shop','news','rules',
+    'accounts','core','servers','shop','news','rules','panel',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware','whitenoise.middleware.WhiteNoiseMiddleware','django.contrib.sessions.middleware.SessionMiddleware',

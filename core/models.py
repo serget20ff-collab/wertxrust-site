@@ -1,10 +1,63 @@
 from django.db import models
-class SiteSetting(models.Model):
-    key=models.SlugField('Ключ',max_length=120,unique=True); value=models.TextField('Значение',blank=True); description=models.CharField('Описание',max_length=255,blank=True)
-    class Meta: verbose_name='Настройка сайта'; verbose_name_plural='Настройки сайта'; ordering=['key']
-    def __str__(self): return self.key
+
+
 class LegalDocument(models.Model):
-    DOCUMENT_TYPES=[('offer','Оферта'),('privacy','Политика конфиденциальности'),('refund','Возвраты'),('terms','Пользовательское соглашение')]
-    doc_type=models.CharField('Тип',max_length=32,choices=DOCUMENT_TYPES,unique=True); title=models.CharField('Заголовок',max_length=255); body=models.TextField('Текст'); updated_at=models.DateTimeField('Обновлено',auto_now=True)
-    class Meta: verbose_name='Юридический документ'; verbose_name_plural='Юридические документы'
-    def __str__(self): return self.title
+    name = models.CharField(
+        'Название',
+        max_length=255,
+        help_text='Название документа в списке. Например: Пользовательское соглашение.',
+    )
+
+    slug = models.SlugField(
+        'Slug / адрес',
+        max_length=255,
+        unique=True,
+        help_text='Адрес документа на сайте. Например: user-agreement.',
+    )
+
+    title = models.CharField(
+        'Заголовок',
+        max_length=255,
+        help_text='Заголовок внутри страницы документа.',
+    )
+
+    text = models.TextField(
+        'Текст документа',
+        blank=True,
+        default='',
+    )
+
+    body = models.TextField(
+        'Технический дубль текста',
+        blank=True,
+        default='',
+        editable=False,
+    )
+
+    is_published = models.BooleanField(
+        'Опубликован',
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        'Создано',
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        'Обновлено',
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = 'Документ'
+        verbose_name_plural = 'Документы'
+        ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        self.text = self.text or ''
+        self.body = self.text
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

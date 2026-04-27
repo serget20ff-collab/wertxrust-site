@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">WERTXRUST CONTROL</div>
+            <h1>{{ title }}</h1>
+            <p>{{ description }}</p>
+        </div>
+
+        <div class="panel-hero-actions">
+            {% if external_action_url %}
+                <a class="main-button primary" href="{{ external_action_url }}" target="_blank" rel="noopener">
+                    {{ external_action_title|default:'Открыть' }}
+                </a>
+            {% endif %}
+
+            <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+                Назад в панель
+            </a>
+        </div>
+    </div>
+
+    {% if players %}
+        <div class="panel-table">
+            <div class="panel-table-head">
+                <span>Steam ID</span>
+                <span>Ник</span>
+                <span>Роль</span>
+                <span>Баланс</span>
+                <span>Последний вход</span>
+            </div>
+
+            {% for player in players %}
+                <div class="panel-table-row">
+                    <span>{{ player.steam_id }}</span>
+                    <span>{{ player.nickname|default:'—' }}</span>
+                    <span>{{ player.get_project_role_display }}</span>
+                    <span>{{ player.balance_rub|floatformat:0 }} ₽</span>
+                    <span>{{ player.last_seen_at|default:'—' }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="panel-empty">
+            <h3>Раздел в разработке</h3>
+            <p>Каркас готов. Здесь будет полноценный интерфейс управления.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

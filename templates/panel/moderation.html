@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Модерация — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">MODERATION</div>
+            <h1>Модерация</h1>
+            <p>
+                Раздел будет связан с кастомным серверным скриптом.
+                Доступные действия будут зависеть от роли сотрудника.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="panel-grid compact">
+        <div class="panel-card">
+            <div class="panel-card-icon">1</div>
+            <div>
+                <h3>Стажёр</h3>
+                <p>Просмотр жалоб, базовые проверки, передача старшим.</p>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-card-icon">2</div>
+            <div>
+                <h3>Модератор</h3>
+                <p>Будущие варны, муты, проверки и временные ограничения.</p>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-card-icon">3</div>
+            <div>
+                <h3>Старшие роли</h3>
+                <p>Контроль действий, аудит, сложные решения.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-empty">
+        <h3>Раздел в разработке</h3>
+        <p>
+            Здесь позже появятся инструменты, которые будут работать через серверный агент.
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Магазин — WertxRust{% endblock %}
+
+{% block content %}
+<section class="shop-page">
+    <div class="shop-head">
+        <div>
+            <div class="section-kicker">МАГАЗИН</div>
+            <h1>Магазин WertxRust</h1>
+            <p>
+                Выбирай наборы, привилегии и игровые товары. После оплаты покупка
+                будет привязана к твоему Steam ID.
+            </p>
+        </div>
+    </div>
+
+    <div class="shop-tabs">
+        <a href="?category=all" class="{% if selected_category == 'all' %}active{% endif %}">
+            Все
+        </a>
+
+        {% for category in categories %}
+            <a
+                href="?category={{ category.slug }}"
+                class="{% if selected_category == category.slug %}active{% endif %}"
+            >
+                {% if category.icon %}{{ category.icon }} {% endif %}{{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="shop-grid">
+        {% for product in products %}
+            <button
+                class="shop-product-card"
+                type="button"
+                data-product-open
+                data-product-id="{{ product.id }}"
+            >
+                {% if product.has_discount %}
+                    <span class="discount-badge">-{{ product.discount_percent }}%</span>
+                {% endif %}
+
+                {% if product.is_promo_ending_soon %}
+                    <span class="promo-ending-badge">
+                        {% if product.promo_days_left == 0 %}
+                            последний день
+                        {% else %}
+                            {{ product.promo_days_left }} дн.
+                        {% endif %}
+                    </span>
+                {% endif %}
+
+                <div class="shop-product-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <span>W</span>
+                    {% endif %}
+                </div>
+
+                <div class="shop-product-body">
+                    <div class="product-type-pill">{{ product.get_product_type_display }}</div>
+
+                    <h3>{{ product.name }}</h3>
+
+                    {% if product.is_simple_item and product.display_amount %}
+                        <p class="product-amount-preview">{{ product.display_amount }}</p>
+                    {% else %}
+                        <p>{{ product.short_description|default:product.description|truncatechars:80 }}</p>
+                    {% endif %}
+
+                    <div class="shop-price">
+                        {% if product.has_discount %}
+                            <del>{{ product.old_price_rub|floatformat:0 }} ₽</del>
+                        {% endif %}
+
+                        <strong>{{ product.price_rub|floatformat:0 }} ₽</strong>
+                    </div>
+                </div>
+            </button>
+
+            <div class="product-modal" data-product-modal="{{ product.id }}" hidden>
+                <div class="product-modal-card">
+                    <button class="product-modal-close" type="button" data-product-close>×</button>
+
+                    <div class="product-modal-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <span>W</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-modal-content">
+                        <div class="section-kicker">
+                            {{ product.category.name|default:product.get_product_type_display }}
+                        </div>
+
+                        <h2>{{ product.name }}</h2>
+
+                        {% if product.has_discount and product.is_promo_ending_soon %}
+                            <div class="product-alert">
+                                {% if product.promo_days_left == 0 %}
+                                    Акция заканчивается сегодня.
+                                {% else %}
+                                    Акция заканчивается через {{ product.promo_days_left }} дн.
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if product.is_privilege %}
+                            <div class="product-info-box">
+                                <h3>Возможности привилегии</h3>
+
+                                {% if product.detail_list %}
+                                    <ul class="product-beauty-list">
+                                        {% for line in product.detail_list %}
+                                            <li>{{ line }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="muted">Возможности будут добавлены позже.</p>
+                                {% endif %}
+                            </div>
+
+                            {% if product.description %}
+                                <p class="product-description">{{ product.description }}</p>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if product.is_kit %}
+                            <div class="product-info-box">
+                                <h3>Описание кита</h3>
+
+                                {% if product.detail_list %}
+                                    <ul class="product-beauty-list">
+                                        {% for line in product.detail_list %}
+                                            <li>{{ line }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% elif product.description %}
+                                    <p>{{ product.description }}</p>
+                                {% else %}
+                                    <p class="muted">Описание будет добавлено позже.</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="product-modal-items">
+                                <h3>Состав кита</h3>
+
+                                {% for item in product.content_items.all %}
+                                    <div class="product-item-row">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                        {% else %}
+                                            <span class="product-item-icon">•</span>
+                                        {% endif %}
+
+                                        <span>{{ item.name }}</span>
+                                        <b>x{{ item.amount }}</b>
+                                    </div>
+                                {% empty %}
+                                    <p class="muted">Состав будет добавлен позже.</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if product.is_simple_item %}
+                            <div class="product-info-box simple-product-info">
+                                <h3>{{ product.get_product_type_display }}</h3>
+
+                                {% if product.display_amount %}
+                                    <div class="product-big-amount">{{ product.display_amount }}</div>
+                                {% endif %}
+
+                                <p>
+                                    {{ product.short_description|default:'Товар будет выдан после покупки.' }}
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if product.is_service %}
+                            <div class="product-info-box">
+                                <h3>Описание услуги</h3>
+                                <p>{{ product.description|default:'Описание услуги будет добавлено позже.' }}</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="product-info-box">
+                            <h3>Как получить</h3>
+                            <p>
+                                {{ product.how_to_get|default:'После покупки товар будет привязан к твоему Steam ID. Подробности выдачи появятся после подключения магазина.' }}
+                            </p>
+                        </div>
+
+                        <div class="product-buy-line">
+                            <div class="shop-price big">
+    				{% if product.has_discount %}
+        			    <del
+           				data-base-old-price="{{ product.old_price_rub }}"
+            				data-total-old-price
+        			    >
+            				{{ product.old_price_rub|floatformat:0 }} ₽
+        			    </del>
+    				{% endif %}
+
+   				<strong
+        			    data-base-price="{{ product.price_rub }}"
+        			    data-total-price
+    				>
+        			    {{ product.price_rub|floatformat:0 }} ₽
+    				</strong>
+			    </div>
+
+                            <div class="quantity-control">
+                                <button type="button" data-qty-minus>-</button>
+                                <input type="number" value="1" min="1" max="99" data-qty-input>
+                                <button type="button" data-qty-plus>+</button>
+                            </div>
+                        </div>
+
+                        <div class="product-modal-actions">
+                            <button class="main-button primary" type="button">
+                                Купить
+                            </button>
+
+                            <button class="main-button dark" type="button" data-product-close>
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="shop-empty">
+                <h3>Магазин пока пуст</h3>
+                <p>Скоро здесь появятся наборы, привилегии и игровые товары.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
