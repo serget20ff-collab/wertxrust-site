@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}{{ post.title }} — WertxRust{% endblock %}{% block content %}<section class="page-wrap narrow"><span class="tag">{{ post.get_post_type_display }}</span><h1>{{ post.title }}</h1><article class="article-body">{{ post.body|linebreaks }}</article></section>{% endblock %}
