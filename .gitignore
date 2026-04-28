@@ -10,3 +10,4 @@ staticfiles/
 .DS_Store
 .idea/
 .vscode/
+.git_old_backup/
