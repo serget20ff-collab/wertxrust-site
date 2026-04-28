@@ -1,24 +1,25 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import Http404
+from django.shortcuts import redirect
 from django.urls import include, path
 
 
-def disabled_admin_path(request):
-    raise Http404()
+def favicon_view(request):
+    return redirect('/static/favicon.svg', permanent=True)
 
 
 urlpatterns = [
-    path('admin/', disabled_admin_path),
+    path('favicon.ico', favicon_view),
+
+    path('admin/', admin.site.urls),
     path('wr-control/', admin.site.urls),
 
-    path('panel/', include('panel.urls')),
-
     path('', include('core.urls')),
-    path('auth/', include('accounts.urls')),
-    path('servers/', include('servers.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('panel/', include('panel.urls')),
     path('shop/', include('shop.urls')),
+    path('servers/', include('servers.urls')),
     path('news/', include('news.urls')),
     path('rules/', include('rules.urls')),
 ]

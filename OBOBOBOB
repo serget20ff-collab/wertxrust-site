@@ -1,0 +1,21 @@
+[0;1;32m●[0m wertxrust.service - WertxRust Django Gunicorn
+     Loaded: loaded (]8;;file://wertxrust.ru/etc/systemd/system/wertxrust.service\/etc/systemd/system/wertxrust.service]8;;\; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Mon 2026-04-27 22:07:45 UTC; 8s ago
+ Invocation: b5c4522d5baf4916bb540c2bdc420a7d
+   Main PID: 65634 (gunicorn)
+      Tasks: 4[0;38:5:245m (limit: 1035)[0m
+     Memory: 104.6M (peak: 104.8M)
+        CPU: 1.942s
+     CGroup: /system.slice/wertxrust.service
+             ├─[0;38:5:245m65634 /var/www/wertxrust-site/.venv/bin/python3.12 /var/www/wertxrust-site/.venv/bin/gunicorn config.wsgi:application --bind unix:/var/www/wertxrust-site/wertxrust.sock --workers 3[0m
+             ├─[0;38:5:245m65635 /var/www/wertxrust-site/.venv/bin/python3.12 /var/www/wertxrust-site/.venv/bin/gunicorn config.wsgi:application --bind unix:/var/www/wertxrust-site/wertxrust.sock --workers 3[0m
+             ├─[0;38:5:245m65636 /var/www/wertxrust-site/.venv/bin/python3.12 /var/www/wertxrust-site/.venv/bin/gunicorn config.wsgi:application --bind unix:/var/www/wertxrust-site/wertxrust.sock --workers 3[0m
+             └─[0;38:5:245m65637 /var/www/wertxrust-site/.venv/bin/python3.12 /var/www/wertxrust-site/.venv/bin/gunicorn config.wsgi:application --bind unix:/var/www/wertxrust-site/wertxrust.sock --workers 3[0m
+
+Apr 27 22:07:45 wertxrust.ru systemd[1]: Started wertxrust.service - WertxRust Django Gunicorn.
+Apr 27 22:07:46 wertxrust.ru gunicorn[65634]: [2026-04-27 22:07:46 +0000] [65634] [INFO] Starting gunicorn 23.0.0
+Apr 27 22:07:46 wertxrust.ru gunicorn[65634]: [2026-04-27 22:07:46 +0000] [65634] [INFO] Listening at: unix:/var/www/wertxrust-site/wertxrust.sock (65634)
+Apr 27 22:07:46 wertxrust.ru gunicorn[65634]: [2026-04-27 22:07:46 +0000] [65634] [INFO] Using worker: sync
+Apr 27 22:07:46 wertxrust.ru gunicorn[65635]: [2026-04-27 22:07:46 +0000] [65635] [INFO] Booting worker with pid: 65635
+Apr 27 22:07:46 wertxrust.ru gunicorn[65636]: [2026-04-27 22:07:46 +0000] [65636] [INFO] Booting worker with pid: 65636
+Apr 27 22:07:46 wertxrust.ru gunicorn[65637]: [2026-04-27 22:07:46 +0000] [65637] [INFO] Booting worker with pid: 65637
