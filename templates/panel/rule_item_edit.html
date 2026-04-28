@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование правила — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">EDIT RULE</div>
+            <h1>Редактирование правила</h1>
+            <p>{{ item.title }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:rules' %}">
+            Назад к правилам
+        </a>
+    </div>
+
+    <form class="panel-form-card single document-edit-form" method="post">
+        {% csrf_token %}
+
+        <h2>{{ item.code|default:'Правило' }} {{ item.title }}</h2>
+        <p>Измени раздел, текст, примечание, наказание, порядок или видимость правила.</p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Сохранить изменения
+        </button>
+    </form>
+</section>
+{% endblock %}

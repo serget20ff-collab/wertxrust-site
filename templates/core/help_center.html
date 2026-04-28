@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Помощь — WertxRust{% endblock %}
+
+{% block content %}
+<section class="help-page">
+    <div class="section-kicker">FAQ</div>
+    <h1>Помощь</h1>
+
+    <div class="help-shell">
+        <aside class="help-categories">
+            <span>Выберите категорию</span>
+            <strong>Раздел справки</strong>
+
+            {% for category in categories %}
+                <a
+                    class="help-category {% if active_category and active_category.pk == category.pk %}active{% endif %}"
+                    href="{% url 'core:help_center' %}?category={{ category.pk }}"
+                >
+                    <b>{{ category.icon|default:'?' }}</b>
+                    <span>
+                        {{ category.title }}
+                        <small>{{ category.subtitle }}</small>
+                    </span>
+                </a>
+            {% empty %}
+                <div class="help-empty">
+                    <strong>Разделы не добавлены</strong>
+                    <p>Создай категории помощи через Django Admin.</p>
+                </div>
+            {% endfor %}
+        </aside>
+
+        <div class="help-content">
+            {% if active_category %}
+                <div class="help-content-head">
+                    <span>{{ active_category.icon|default:'?' }}</span>
+                    <div>
+                        <h2>{{ active_category.title }}</h2>
+                        <p>{{ active_category.subtitle|default:'Ответы на частые вопросы по выбранному разделу.' }}</p>
+                    </div>
+                </div>
+
+                <div class="help-items">
+                    {% for item in active_category.items.all %}
+                        {% if item.is_public %}
+                            <article class="help-item">
+                                <h3>{{ item.title }}</h3>
+                                <p>{{ item.body|linebreaksbr }}</p>
+                            </article>
+                        {% endif %}
+                    {% empty %}
+                        <div class="help-empty">
+                            <strong>Пока пусто</strong>
+                            <p>Добавь пункты помощи в выбранную категорию.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="help-empty">
+                    <strong>Помощь готовится</strong>
+                    <p>Скоро здесь появятся ответы на частые вопросы.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

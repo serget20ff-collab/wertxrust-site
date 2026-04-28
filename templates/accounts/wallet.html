@@ -3,7 +3,7 @@
 {% block title %}Кошелёк — WertxRust{% endblock %}
 
 {% block content %}
-<section class="account-page">
+<section class="account-page wallet-page">
     <aside class="account-sidebar">
         <div class="account-big-avatar">
             {% if request.user.steam_profile.avatar_full %}
@@ -29,19 +29,86 @@
 
         <div class="wallet-grid">
             <div class="wallet-card active">
-                <strong>{{ request.user.steam_profile.balance_rub|floatformat:0 }} ₽</strong>
+                <strong>{{ profile.balance_rub|floatformat:0 }} ₽</strong>
                 <span>Баланс аккаунта</span>
             </div>
 
             <div class="wallet-card">
-                <strong>0,00 €</strong>
-                <span>Резервный счёт</span>
+                <strong>{{ transactions|length }}</strong>
+                <span>Операций в истории</span>
             </div>
         </div>
 
-        <button class="main-button primary" type="button" data-open-topup>
-            Пополнить баланс
-        </button>
+        <div class="panel-forms-grid wallet-transfer-grid">
+            <form class="panel-form-card single" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="prepare_transfer">
+                <h2>Перевод игроку</h2>
+                <p>Перевод выполняется только сервером, после подтверждения. Баланс нельзя подделать через браузер.</p>
+
+                <div class="panel-form-grid">
+                    <p>
+                        <label for="transfer_steam_id">Steam ID получателя</label>
+                        <input id="transfer_steam_id" name="recipient_steam_id" type="text" maxlength="32" required>
+                    </p>
+                    <p>
+                        <label for="transfer_amount">Сумма, ₽</label>
+                        <input id="transfer_amount" name="amount_rub" type="number" min="1" step="1" required>
+                    </p>
+                </div>
+
+                <button class="main-button dark" type="submit">Подготовить перевод</button>
+            </form>
+        </div>
+
+        {% if pending_transfer %}
+            <div class="panel-form-card single">
+                <h2>Подтверждение перевода</h2>
+                <p>
+                    Получатель: <b>{{ pending_transfer.recipient_nickname|default:'Игрок' }}</b>
+                    ({{ pending_transfer.recipient_steam_id }})<br>
+                    Сумма: <b>{{ pending_transfer.amount_rub }} ₽</b>
+                </p>
+
+                <div class="document-admin-actions">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="confirm_transfer">
+                        <button class="main-button primary" type="submit">Подтвердить перевод</button>
+                    </form>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cancel_transfer">
+                        <button class="main-button dark" type="submit">Отменить</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="panel-block">
+            <div class="panel-block-head">
+                <h2>История операций</h2>
+            </div>
+            <div class="panel-table">
+                <div class="panel-table-head simple-4">
+                    <span>Дата</span>
+                    <span>Операция</span>
+                    <span>Сумма</span>
+                    <span>Баланс после</span>
+                </div>
+                {% for tx in transactions %}
+                    <div class="panel-table-row simple-4">
+                        <span>{{ tx.created_at }}</span>
+                        <span>{{ tx.get_tx_type_display }}{% if tx.description %}: {{ tx.description }}{% endif %}</span>
+                        <span>{{ tx.amount_rub|floatformat:0 }} ₽</span>
+                        <span>{{ tx.balance_after_rub|floatformat:0 }} ₽</span>
+                    </div>
+                {% empty %}
+                    <div class="panel-table-empty">Операций пока нет.</div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

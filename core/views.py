@@ -4,7 +4,7 @@ from news.models import NewsPost
 from servers.models import RustServer
 from shop.models import Product
 
-from .models import LegalDocument
+from .models import HelpCategory, LegalDocument
 
 
 def home(request):
@@ -56,5 +56,32 @@ def legal_detail(request, slug):
         'core/legal_detail.html',
         {
             'doc': doc,
+        },
+    )
+
+
+def help_center(request):
+    categories = (
+        HelpCategory.objects
+        .filter(is_public=True)
+        .prefetch_related('items')
+        .order_by('sort_order', 'title')
+    )
+
+    selected_category = request.GET.get('category', '').strip()
+    active_category = None
+
+    if selected_category:
+        active_category = categories.filter(pk=selected_category).first()
+
+    if not active_category:
+        active_category = categories.first()
+
+    return render(
+        request,
+        'core/help_center.html',
+        {
+            'categories': categories,
+            'active_category': active_category,
         },
     )

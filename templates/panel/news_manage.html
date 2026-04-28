@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Новости — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">NEWS CONTROL</div>
+            <h1>Новости</h1>
+            <p>
+                Создавай публикации, вайпы, акции и обновления проекта.
+                Опубликованные новости видны на сайте.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <form class="panel-form-card single" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h2>Создать новость</h2>
+        <p>Заполни заголовок, адрес, краткое описание и текст публикации.</p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Создать новость
+        </button>
+    </form>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Список новостей</h2>
+            <p>Черновики остаются скрытыми, опубликованные записи видны в разделе “Новости”.</p>
+        </div>
+
+        <div class="documents-admin-grid">
+            {% for post in posts %}
+                <article class="document-admin-card">
+                    <div>
+                        <span>
+                            {% if post.is_published %}
+                                Опубликована
+                            {% else %}
+                                Черновик
+                            {% endif %}
+                        </span>
+
+                        <h3>{{ post.title }}</h3>
+                        <p>{{ post.excerpt|default:'Краткое описание не заполнено.' }}</p>
+
+                        <small>/news/{{ post.slug }}/</small>
+                    </div>
+
+                    <div class="document-admin-actions">
+                        <a class="main-button dark" href="{% url 'panel:news_edit' post.pk %}">
+                            Изменить
+                        </a>
+
+                        {% if post.is_published %}
+                            <a class="main-button primary" href="{% url 'news:news_detail' post.slug %}" target="_blank" rel="noopener">
+                                Открыть
+                            </a>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'panel:news_delete' post.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="panel-empty">
+                    <h3>Новостей пока нет</h3>
+                    <p>Создай первую новость через форму выше.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

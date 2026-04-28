@@ -1,7 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
 
-from .models import PlayerAdminNote, SteamLoginEvent, SteamProfile
+from .models import (
+    PlayerAdminNote,
+    SteamLoginEvent,
+    SteamProfile,
+    WalletTransaction,
+)
 
 
 class SteamLoginEventInline(admin.TabularInline):
@@ -150,6 +155,31 @@ class PlayerAdminNoteAdmin(admin.ModelAdmin):
         'profile__steam_id',
         'profile__nickname',
     )
+
+
+@admin.register(WalletTransaction)
+class WalletTransactionAdmin(admin.ModelAdmin):
+    list_display = (
+        'created_at',
+        'profile',
+        'tx_type',
+        'amount_rub',
+        'balance_after_rub',
+        'counterparty_profile',
+        'reference_code',
+    )
+    list_filter = (
+        'tx_type',
+        'created_at',
+    )
+    search_fields = (
+        'profile__steam_id',
+        'profile__nickname',
+        'counterparty_profile__steam_id',
+        'reference_code',
+        'description',
+    )
+
 
 
 try:

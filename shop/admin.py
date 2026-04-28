@@ -47,6 +47,7 @@ class ProductAdmin(admin.ModelAdmin):
         'old_price_rub',
         'duration_days',
         'promo_duration_days',
+        'server_scope',
         'is_active',
         'is_featured',
         'created_at',
@@ -112,6 +113,16 @@ class ProductAdmin(admin.ModelAdmin):
             },
         ),
         (
+            'Серверы',
+            {
+                'fields': (
+                    'server_scope',
+                    'servers',
+                    'server_categories',
+                )
+            },
+        ),
+        (
             'Системное',
             {
                 'fields': (
@@ -146,6 +157,7 @@ class OrderAdmin(admin.ModelAdmin):
         'id',
         'profile',
         'status',
+        'selected_server',
         'total_rub',
         'created_at',
         'updated_at',
@@ -174,6 +186,7 @@ class EntitlementAdmin(admin.ModelAdmin):
     list_display = (
         'profile',
         'product',
+        'server',
         'status',
         'starts_at',
         'expires_at',

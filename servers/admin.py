@@ -5,8 +5,30 @@ from .models import (
     RustServer,
     ServerApiToken,
     ServerPlayerConnection,
+    ServerShopCategory,
     ServerSnapshot,
 )
+
+
+@admin.register(ServerShopCategory)
+class ServerShopCategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'slug',
+        'is_active',
+        'sort_order',
+    )
+    list_filter = (
+        'is_active',
+    )
+    search_fields = (
+        'name',
+        'slug',
+        'description',
+    )
+    prepopulated_fields = {
+        'slug': ('name',),
+    }
 
 
 @admin.register(RustServer)
@@ -15,6 +37,7 @@ class RustServerAdmin(admin.ModelAdmin):
         'name',
         'ip',
         'port',
+        'shop_category',
         'server_type',
         'rates',
         'map_size',
@@ -27,6 +50,7 @@ class RustServerAdmin(admin.ModelAdmin):
         'is_public',
         'show_on_home',
         'server_type',
+        'shop_category',
         'rates',
     )
     search_fields = (

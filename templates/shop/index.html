@@ -221,10 +221,28 @@
                             </div>
                         </div>
 
+                        <div class="product-info-box">
+                            <h3>Сервер для выдачи</h3>
+                            <p class="muted">Выбери сервер, на котором нужно выдать покупку.</p>
+                            <select class="shop-server-select" name="server_id" form="buy-form-{{ product.id }}" required>
+                                <option value="">Выбрать сервер</option>
+                                {% for server in product.available_servers %}
+                                    <option value="{{ server.id }}">{{ server.name }}</option>
+                                {% empty %}
+                                    <option value="" disabled>Нет доступных серверов</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <div class="product-modal-actions">
-                            <button class="main-button primary" type="button">
-                                Купить
-                            </button>
+                            <form id="buy-form-{{ product.id }}" method="post" action="{% url 'shop:buy_with_wallet' %}" data-buy-form>
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="quantity" value="1" data-buy-qty>
+                                <button class="main-button primary" type="submit">
+                                    Купить с баланса
+                                </button>
+                            </form>
 
                             <button class="main-button dark" type="button" data-product-close>
                                 Отмена

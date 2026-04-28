@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import SteamProfile
+from servers.models import RustServer, ServerShopCategory
 
 
 class ProductCategory(models.Model):
@@ -40,6 +41,14 @@ class Product(models.Model):
         (PRODUCT_COMPONENT, 'Компонент'),
         (PRODUCT_COSMETIC, 'Косметика'),
         (PRODUCT_SERVICE, 'Услуга'),
+    ]
+
+    SERVER_SCOPE_ALL = 'all'
+    SERVER_SCOPE_SELECTED = 'selected'
+
+    SERVER_SCOPE_CHOICES = [
+        (SERVER_SCOPE_ALL, 'Все серверы'),
+        (SERVER_SCOPE_SELECTED, 'Выбранные серверы'),
     ]
 
     category = models.ForeignKey(
@@ -90,11 +99,11 @@ class Product(models.Model):
         help_text='Для ресурса, оружия, компонента или косметики. Например: x1000, 1 шт., набор.',
     )
 
-    price_rub = models.DecimalField('Текущая цена, ₽', max_digits=10, decimal_places=2)
+    price_rub = models.DecimalField('Текущая цена, ₽', max_digits=10, decimal_places=0)
     old_price_rub = models.DecimalField(
         'Старая цена, ₽',
         max_digits=10,
-        decimal_places=2,
+        decimal_places=0,
         null=True,
         blank=True,
     )
@@ -113,6 +122,25 @@ class Product(models.Model):
 
     is_active = models.BooleanField('Активен', default=True)
     is_featured = models.BooleanField('Показывать на главной', default=False)
+    server_scope = models.CharField(
+        'Доступность по серверам',
+        max_length=16,
+        choices=SERVER_SCOPE_CHOICES,
+        default=SERVER_SCOPE_ALL,
+    )
+    servers = models.ManyToManyField(
+        RustServer,
+        blank=True,
+        related_name='products',
+        verbose_name='Доступные серверы',
+    )
+    server_categories = models.ManyToManyField(
+        ServerShopCategory,
+        blank=True,
+        related_name='products',
+        verbose_name='Внутренние категории серверов',
+        help_text='Товар будет доступен на серверах из выбранных внутренних категорий.',
+    )
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
@@ -193,6 +221,36 @@ class Product(models.Model):
 
         return 0 <= days_left <= 10
 
+    def is_available_for_server(self, server):
+        if self.server_scope == self.SERVER_SCOPE_ALL:
+            return True
+
+        if not server:
+            return False
+
+        if self.servers.filter(pk=server.pk).exists():
+            return True
+
+        if server.shop_category_id:
+            return self.server_categories.filter(pk=server.shop_category_id).exists()
+
+        return False
+
+    def available_servers(self):
+        if self.server_scope == self.SERVER_SCOPE_ALL:
+            return RustServer.objects.filter(is_public=True).order_by('sort_order', 'name')
+
+        selected_ids = self.servers.filter(is_public=True).values_list('pk', flat=True)
+        category_ids = self.server_categories.filter(is_active=True).values_list('pk', flat=True)
+
+        return (
+            RustServer.objects
+            .filter(is_public=True)
+            .filter(models.Q(pk__in=selected_ids) | models.Q(shop_category_id__in=category_ids))
+            .distinct()
+            .order_by('sort_order', 'name')
+        )
+
 
 class ProductContentItem(models.Model):
     product = models.ForeignKey(
@@ -219,8 +277,9 @@ class Order(models.Model):
         ('draft', 'Черновик'),
         ('pending', 'Ожидает оплаты'),
         ('paid', 'Оплачен'),
-        ('granting', 'Выдается'),
+        ('granting', 'Ожидает выдачи'),
         ('completed', 'Выполнен'),
+        ('failed', 'Ошибка выдачи'),
         ('cancelled', 'Отменен'),
         ('refunded', 'Возврат'),
     ]
@@ -232,7 +291,16 @@ class Order(models.Model):
     )
 
     status = models.CharField('Статус', max_length=32, choices=STATUS_CHOICES, default='draft')
-    total_rub = models.DecimalField('Сумма, ₽', max_digits=10, decimal_places=2, default=0)
+    selected_server = models.ForeignKey(
+        RustServer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='orders',
+        verbose_name='Сервер покупки',
+    )
+    total_rub = models.DecimalField('Сумма, ₽', max_digits=10, decimal_places=0, default=0)
+    delivery_error = models.TextField('Ошибка выдачи', blank=True)
 
     customer_email = models.EmailField('Email покупателя', blank=True)
     comment = models.TextField('Комментарий', blank=True)
@@ -254,7 +322,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
 
     quantity = models.PositiveIntegerField('Количество', default=1)
-    price_rub = models.DecimalField('Цена на момент покупки', max_digits=10, decimal_places=2)
+    price_rub = models.DecimalField('Цена на момент покупки', max_digits=10, decimal_places=0)
 
     class Meta:
         verbose_name = 'Позиция заказа'
@@ -272,7 +340,7 @@ class PaymentTransaction(models.Model):
     provider = models.CharField('Провайдер', max_length=32, choices=PROVIDERS, default='yookassa')
     provider_payment_id = models.CharField('ID платежа у провайдера', max_length=255, blank=True, db_index=True)
     status = models.CharField('Статус платежа', max_length=64, blank=True)
-    amount_rub = models.DecimalField('Сумма, ₽', max_digits=10, decimal_places=2, default=0)
+    amount_rub = models.DecimalField('Сумма, ₽', max_digits=10, decimal_places=0, default=0)
     raw_payload = models.JSONField('Сырой payload', default=dict, blank=True)
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
@@ -286,7 +354,11 @@ class PaymentTransaction(models.Model):
 
 class Entitlement(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'Ожидает выдачи'),
+        ('sent', 'Отправлено на сервер'),
         ('active', 'Активно'),
+        ('failed', 'Ошибка выдачи'),
+        ('refunded', 'Возвращено'),
         ('expired', 'Истекло'),
         ('revoked', 'Отозвано'),
     ]
@@ -297,6 +369,14 @@ class Entitlement(models.Model):
         related_name='entitlements',
     )
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    server = models.ForeignKey(
+        RustServer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='entitlements',
+        verbose_name='Сервер',
+    )
     order = models.ForeignKey(
         Order,
         on_delete=models.SET_NULL,
@@ -310,6 +390,8 @@ class Entitlement(models.Model):
     expires_at = models.DateTimeField('Окончание', null=True, blank=True)
 
     server_payload = models.JSONField('Данные для выдачи серверному агенту', default=dict, blank=True)
+    delivery_error = models.TextField('Ошибка выдачи', blank=True)
+    delivered_at = models.DateTimeField('Выдано', null=True, blank=True)
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)

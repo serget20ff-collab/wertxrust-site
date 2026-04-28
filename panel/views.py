@@ -6,16 +6,22 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import SteamProfile
-from servers.models import RustServer, ServerApiToken, ServerPlayerConnection
+from news.models import NewsPost
+from rules.models import RuleItem, RuleSection
+from servers.models import RustServer, ServerApiToken, ServerPlayerConnection, ServerShopCategory
 from shop.models import Entitlement, Order, Product, ProductCategory
 
 from core.models import LegalDocument
 from .forms import (
     LegalDocumentForm,
+    NewsPostForm,
     ProductCategoryForm,
     ProductForm,
+    RuleItemForm,
+    RuleSectionForm,
     RustServerForm,
     ServerApiTokenForm,
+    ServerShopCategoryForm,
 )
 
 
@@ -82,6 +88,20 @@ PANEL_SECTIONS = [
         'description': 'Оферта, политика, правила и юридические тексты.',
         'url_name': 'panel:documents',
         'icon_symbol': '📄',
+    },
+    {
+        'key': 'news',
+        'title': 'Новости',
+        'description': 'Публикации, вайпы, акции и обновления проекта.',
+        'url_name': 'panel:news',
+        'icon_symbol': 'newspaper',
+    },
+    {
+        'key': 'rules',
+        'title': 'Правила',
+        'description': 'Разделы правил, пункты и наказания.',
+        'url_name': 'panel:rules',
+        'icon_symbol': 'scroll',
     },
 ]
 
@@ -156,6 +176,8 @@ def dashboard_view(request):
         'products_count': Product.objects.count(),
         'orders_count': Order.objects.count(),
         'servers_count': RustServer.objects.count(),
+        'news_count': NewsPost.objects.count(),
+        'rules_count': RuleItem.objects.count(),
     }
 
     return render(
@@ -300,7 +322,7 @@ def shop_manage_view(request):
     products = (
         Product.objects
         .select_related('category')
-        .prefetch_related('content_items')
+        .prefetch_related('content_items', 'servers', 'server_categories')
         .order_by('name')[:120]
     )
 
@@ -328,6 +350,32 @@ def shop_manage_view(request):
 
 
 @login_required
+def category_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'shop', 'developer')
+
+    category = get_object_or_404(ProductCategory, pk=pk)
+    form = ProductCategoryForm(instance=category)
+
+    if request.method == 'POST':
+        form = ProductCategoryForm(request.POST, instance=category)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:shop')
+
+    return render(
+        request,
+        'panel/category_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'category': category,
+        },
+    )
+
+
+@login_required
 def category_delete_view(request, pk):
     profile = get_profile_or_deny(request)
     require_section(request, profile, 'shop', 'developer')
@@ -338,6 +386,32 @@ def category_delete_view(request, pk):
         category.delete()
 
     return redirect('panel:shop')
+
+
+@login_required
+def product_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'shop', 'developer')
+
+    product = get_object_or_404(Product.objects.prefetch_related('content_items'), pk=pk)
+    form = ProductForm(instance=product)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:shop')
+
+    return render(
+        request,
+        'panel/product_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'product': product,
+        },
+    )
 
 
 @login_required
@@ -358,16 +432,28 @@ def servers_manage_view(request):
     profile = get_profile_or_deny(request)
     require_section(request, profile, 'servers', 'developer')
 
+    category_form = ServerShopCategoryForm(prefix='category')
     server_form = RustServerForm(prefix='server')
 
     if request.method == 'POST':
-        server_form = RustServerForm(request.POST, prefix='server')
+        form_kind = request.POST.get('form_kind', 'server')
 
-        if server_form.is_valid():
-            server_form.save()
-            return redirect('panel:servers')
+        if form_kind == 'category':
+            category_form = ServerShopCategoryForm(request.POST, prefix='category')
 
-    servers = RustServer.objects.all().order_by('sort_order', 'name')
+            if category_form.is_valid():
+                category_form.save()
+                return redirect('panel:servers')
+
+        if form_kind == 'server':
+            server_form = RustServerForm(request.POST, prefix='server')
+
+            if server_form.is_valid():
+                server_form.save()
+                return redirect('panel:servers')
+
+    server_categories = ServerShopCategory.objects.all().order_by('sort_order', 'name')
+    servers = RustServer.objects.select_related('shop_category').order_by('sort_order', 'name')
 
     connections = (
         ServerPlayerConnection.objects
@@ -380,9 +466,76 @@ def servers_manage_view(request):
         'panel/servers_manage.html',
         {
             'profile': profile,
+            'category_form': category_form,
             'server_form': server_form,
+            'server_categories': server_categories,
             'servers': servers,
             'connections': connections,
+        },
+    )
+
+
+@login_required
+def server_category_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'servers', 'developer')
+
+    category = get_object_or_404(ServerShopCategory, pk=pk)
+    form = ServerShopCategoryForm(instance=category)
+
+    if request.method == 'POST':
+        form = ServerShopCategoryForm(request.POST, instance=category)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:servers')
+
+    return render(
+        request,
+        'panel/server_category_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'category': category,
+        },
+    )
+
+
+@login_required
+def server_category_delete_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'servers', 'developer')
+
+    category = get_object_or_404(ServerShopCategory, pk=pk)
+
+    if request.method == 'POST':
+        category.delete()
+
+    return redirect('panel:servers')
+
+
+@login_required
+def server_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'servers', 'developer')
+
+    server = get_object_or_404(RustServer, pk=pk)
+    form = RustServerForm(instance=server)
+
+    if request.method == 'POST':
+        form = RustServerForm(request.POST, instance=server)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:servers')
+
+    return render(
+        request,
+        'panel/server_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'server': server,
         },
     )
 
@@ -457,7 +610,7 @@ def staff_view(request):
 
         if new_balance_raw:
             try:
-                target.balance_rub = Decimal(new_balance_raw)
+                target.balance_rub = Decimal(new_balance_raw).quantize(Decimal('1'))
             except InvalidOperation:
                 pass
 
@@ -618,3 +771,188 @@ def document_delete_view(request, pk):
         document.delete()
 
     return redirect('panel:documents')
+
+
+@login_required
+def news_manage_view(request):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'news', 'developer')
+
+    form = NewsPostForm()
+
+    if request.method == 'POST':
+        form = NewsPostForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:news')
+
+    posts = NewsPost.objects.all().order_by('-published_at', '-created_at')
+
+    return render(
+        request,
+        'panel/news_manage.html',
+        {
+            'profile': profile,
+            'form': form,
+            'posts': posts,
+        },
+    )
+
+
+@login_required
+def news_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'news', 'developer')
+
+    post = get_object_or_404(NewsPost, pk=pk)
+    form = NewsPostForm(instance=post)
+
+    if request.method == 'POST':
+        form = NewsPostForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:news')
+
+    return render(
+        request,
+        'panel/news_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'post': post,
+        },
+    )
+
+
+@login_required
+def news_delete_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'news', 'developer')
+
+    post = get_object_or_404(NewsPost, pk=pk)
+
+    if request.method == 'POST':
+        post.delete()
+
+    return redirect('panel:news')
+
+
+@login_required
+def rules_manage_view(request):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'rules', 'developer')
+
+    section_form = RuleSectionForm(prefix='section')
+    item_form = RuleItemForm(prefix='item')
+
+    if request.method == 'POST':
+        form_kind = request.POST.get('form_kind')
+
+        if form_kind == 'section':
+            section_form = RuleSectionForm(request.POST, prefix='section')
+
+            if section_form.is_valid():
+                section_form.save()
+                return redirect('panel:rules')
+
+        if form_kind == 'item':
+            item_form = RuleItemForm(request.POST, prefix='item')
+
+            if item_form.is_valid():
+                item_form.save()
+                return redirect('panel:rules')
+
+    sections = RuleSection.objects.prefetch_related('items').order_by('sort_order', 'title')
+    items = RuleItem.objects.select_related('section').order_by('section__sort_order', 'sort_order', 'id')
+
+    return render(
+        request,
+        'panel/rules_manage.html',
+        {
+            'profile': profile,
+            'section_form': section_form,
+            'item_form': item_form,
+            'sections': sections,
+            'items': items,
+        },
+    )
+
+
+@login_required
+def rule_section_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'rules', 'developer')
+
+    section = get_object_or_404(RuleSection, pk=pk)
+    form = RuleSectionForm(instance=section)
+
+    if request.method == 'POST':
+        form = RuleSectionForm(request.POST, instance=section)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:rules')
+
+    return render(
+        request,
+        'panel/rule_section_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'section': section,
+        },
+    )
+
+
+@login_required
+def rule_section_delete_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'rules', 'developer')
+
+    section = get_object_or_404(RuleSection, pk=pk)
+
+    if request.method == 'POST':
+        section.delete()
+
+    return redirect('panel:rules')
+
+
+@login_required
+def rule_item_edit_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'rules', 'developer')
+
+    item = get_object_or_404(RuleItem, pk=pk)
+    form = RuleItemForm(instance=item)
+
+    if request.method == 'POST':
+        form = RuleItemForm(request.POST, instance=item)
+
+        if form.is_valid():
+            form.save()
+            return redirect('panel:rules')
+
+    return render(
+        request,
+        'panel/rule_item_edit.html',
+        {
+            'profile': profile,
+            'form': form,
+            'item': item,
+        },
+    )
+
+
+@login_required
+def rule_item_delete_view(request, pk):
+    profile = get_profile_or_deny(request)
+    require_section(request, profile, 'rules', 'developer')
+
+    item = get_object_or_404(RuleItem, pk=pk)
+
+    if request.method == 'POST':
+        item.delete()
+
+    return redirect('panel:rules')

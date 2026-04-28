@@ -61,3 +61,45 @@ class LegalDocument(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class HelpCategory(models.Model):
+    title = models.CharField('Название', max_length=255)
+    subtitle = models.CharField('Подпись', max_length=255, blank=True)
+    icon = models.CharField(
+        'Иконка',
+        max_length=32,
+        blank=True,
+        help_text='Короткий текст или emoji. Например: ⚙, </>, $',
+    )
+    sort_order = models.PositiveIntegerField('Сортировка', default=100)
+    is_public = models.BooleanField('Показывать', default=True)
+
+    class Meta:
+        verbose_name = 'Категория помощи'
+        verbose_name_plural = 'Категории помощи'
+        ordering = ['sort_order', 'title']
+
+    def __str__(self):
+        return self.title
+
+
+class HelpItem(models.Model):
+    category = models.ForeignKey(
+        HelpCategory,
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name='Категория',
+    )
+    title = models.CharField('Вопрос / заголовок', max_length=255)
+    body = models.TextField('Ответ / описание')
+    sort_order = models.PositiveIntegerField('Сортировка', default=100)
+    is_public = models.BooleanField('Показывать', default=True)
+
+    class Meta:
+        verbose_name = 'Пункт помощи'
+        verbose_name_plural = 'Пункты помощи'
+        ordering = ['category__sort_order', 'sort_order', 'title']
+
+    def __str__(self):
+        return self.title

@@ -7,10 +7,34 @@ from django.utils import timezone
 from accounts.models import SteamProfile
 
 
+class ServerShopCategory(models.Model):
+    name = models.CharField('Название', max_length=120)
+    slug = models.SlugField('Slug', unique=True)
+    description = models.TextField('Описание', blank=True)
+    sort_order = models.PositiveIntegerField('Сортировка', default=100)
+    is_active = models.BooleanField('Активна', default=True)
+
+    class Meta:
+        verbose_name = 'Внутренняя категория серверов'
+        verbose_name_plural = 'Внутренние категории серверов'
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
 class RustServer(models.Model):
     name = models.CharField('Название', max_length=255)
     slug = models.SlugField('Slug', unique=True)
     description = models.TextField('Описание', blank=True)
+    shop_category = models.ForeignKey(
+        ServerShopCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='servers',
+        verbose_name='Внутренняя категория магазина',
+    )
 
     ip = models.CharField('IP / домен', max_length=255, blank=True)
     port = models.PositiveIntegerField('Порт', default=28015)

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Правила — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">RULES CONTROL</div>
+            <h1>Правила</h1>
+            <p>
+                Управляй разделами правил и отдельными пунктами.
+                Публичные разделы и пункты отображаются на странице правил.
+            </p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:dashboard' %}">
+            Назад в панель
+        </a>
+    </div>
+
+    <div class="panel-forms-grid">
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="section">
+
+            <h2>Добавить раздел</h2>
+            <p>Раздел группирует правила: сервер, Discord, магазин или юридический блок.</p>
+
+            <div class="panel-form-grid">
+                {{ section_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать раздел
+            </button>
+        </form>
+
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="item">
+
+            <h2>Добавить правило</h2>
+            <p>Укажи раздел, номер, текст правила, примечание, наказание и порядок сортировки.</p>
+
+            <div class="panel-form-grid">
+                {{ item_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать правило
+            </button>
+        </form>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Разделы правил</h2>
+            <p>Скрытый раздел не показывается пользователям на странице правил.</p>
+        </div>
+
+        <div class="documents-admin-grid">
+            {% for section in sections %}
+                <article class="document-admin-card">
+                    <div>
+                        <span>
+                            {% if section.is_public %}
+                                Публичный
+                            {% else %}
+                                Скрыт
+                            {% endif %}
+                        </span>
+
+                        <h3>{{ section.title }}</h3>
+                        <p>{{ section.description|default:'Описание раздела не заполнено.' }}</p>
+
+                        <small>{{ section.get_section_type_display }} · порядок {{ section.sort_order }}</small>
+                    </div>
+
+                    <div class="document-admin-actions">
+                        <a class="main-button dark" href="{% url 'panel:rule_section_edit' section.pk %}">
+                            Изменить
+                        </a>
+
+                        <form method="post" action="{% url 'panel:rule_section_delete' section.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="panel-empty">
+                    <h3>Разделов пока нет</h3>
+                    <p>Создай первый раздел через форму выше.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Правила</h2>
+            <p>Пункты сортируются по разделу, порядку и ID.</p>
+        </div>
+
+        <div class="panel-table">
+            <div class="panel-table-head rules-admin-table">
+                <span>Код</span>
+                <span>Название</span>
+                <span>Раздел</span>
+                <span>Примечание</span>
+                <span>Действие</span>
+            </div>
+
+            {% for item in items %}
+                <div class="panel-table-row rules-admin-table">
+                    <span>{{ item.code|default:'—' }}</span>
+                    <span>{{ item.title }}</span>
+                    <span>{{ item.section.title }}</span>
+                    <span>{% if item.note %}Есть{% else %}—{% endif %} · {% if item.is_public %}публичное{% else %}скрыто{% endif %}</span>
+                    <span class="panel-inline-actions">
+                        <a class="main-button dark" href="{% url 'panel:rule_item_edit' item.pk %}">
+                            Изменить
+                        </a>
+
+                        <form method="post" action="{% url 'panel:rule_item_delete' item.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">
+                                Удалить
+                            </button>
+                        </form>
+                    </span>
+                </div>
+            {% empty %}
+                <div class="panel-table-empty">Правил пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

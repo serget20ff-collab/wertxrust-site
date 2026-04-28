@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование новости — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">EDIT NEWS</div>
+            <h1>Редактирование новости</h1>
+            <p>{{ post.title }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:news' %}">
+            Назад к новостям
+        </a>
+    </div>
+
+    <form class="panel-form-card single document-edit-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h2>{{ post.title }}</h2>
+        <p>Измени текст, обложку, дату публикации или статус новости.</p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Сохранить изменения
+        </button>
+    </form>
+</section>
+{% endblock %}

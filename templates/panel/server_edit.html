@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить сервер — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero compact-title">
+        <div>
+            <div class="section-kicker">SERVER CONTROL</div>
+            <h1>Изменить сервер</h1>
+            <p>{{ server.name }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:servers' %}">Назад</a>
+    </div>
+
+    <form class="panel-form-card single" method="post">
+        {% csrf_token %}
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">Сохранить сервер</button>
+    </form>
+</section>
+{% endblock %}

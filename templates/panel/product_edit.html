@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить товар — Администрирование{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero compact-title">
+        <div>
+            <div class="section-kicker">SHOP CONTROL</div>
+            <h1>Изменить товар</h1>
+            <p>{{ product.name }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:shop' %}">Назад</a>
+    </div>
+
+    <form class="panel-form-card single" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="panel-form-grid product-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">Сохранить товар</button>
+    </form>
+</section>
+{% endblock %}

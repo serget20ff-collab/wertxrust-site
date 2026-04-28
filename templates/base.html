@@ -4,18 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}WertxRust{% endblock %}</title>
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
 
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}?v=1">
     <link rel="shortcut icon" href="{% static 'favicon.svg' %}?v=1">
 
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=13">
-    <script src="{% static 'js/site.js' %}?v=13" defer></script>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20">
+    <script src="{% static 'js/site.js' %}?v=20" defer></script>
 </head>
 
 <body>
     <div class="cursor-glow" id="cursorGlow"></div>
     <div class="page-gradient"></div>
+    <div class="ambient-layer" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
     <div class="grid-layer"></div>
     <div class="noise-layer"></div>
 
@@ -25,26 +30,30 @@
         </a>
 
         <nav class="side-menu">
-            <a class="side-link active magnetic" href="{% url 'core:home' %}" title="Главная" aria-label="Главная">
+            <a class="side-link magnetic {% if request.resolver_match.app_name == 'core' and request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}" title="Главная" aria-label="Главная">
                 <svg viewBox="0 0 24 24"><path d="M4 10.8 12 4l8 6.8v8.7a.5.5 0 0 1-.5.5h-5v-5.8h-5V20h-5a.5.5 0 0 1-.5-.5v-8.7Z"/></svg>
             </a>
 
-            <a class="side-link magnetic" href="{% url 'servers:server_list' %}" title="Серверы" aria-label="Серверы">
+            <a class="side-link magnetic {% if request.resolver_match.app_name == 'servers' %}active{% endif %}" href="{% url 'servers:server_list' %}" title="Серверы" aria-label="Серверы">
                 <svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm1.5 3.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM5 14h14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2Zm1.5 2.3a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4Z"/></svg>
             </a>
 
-            <a class="side-link magnetic" href="{% url 'shop:shop_index' %}" title="Магазин" aria-label="Магазин">
+            <a class="side-link magnetic {% if request.resolver_match.app_name == 'shop' %}active{% endif %}" href="{% url 'shop:shop_index' %}" title="Магазин" aria-label="Магазин">
                 <svg viewBox="0 0 24 24"><path d="M8 8V7a4 4 0 0 1 8 0v1h2.2a1 1 0 0 1 1 .9l.8 10a2 2 0 0 1-2 2.1H6a2 2 0 0 1-2-2.1l.8-10a1 1 0 0 1 1-.9H8Zm2 0h4V7a2 2 0 1 0-4 0v1Zm-1 4.2a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm6 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
             </a>
 
-            <a class="side-link magnetic" href="{% url 'rules:rules_index' %}" title="Правила" aria-label="Правила">
+            <a class="side-link magnetic {% if request.resolver_match.app_name == 'rules' %}active{% endif %}" href="{% url 'rules:rules_index' %}" title="Правила" aria-label="Правила">
                 <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 1.8V8h3.2L13 4.8ZM8 11h8v1.8H8V11Zm0 4h8v1.8H8V15Z"/></svg>
+            </a>
+
+            <a class="side-link magnetic {% if request.resolver_match.app_name == 'core' and request.resolver_match.url_name == 'help_center' %}active{% endif %}" href="{% url 'core:help_center' %}" title="Помощь" aria-label="Помощь">
+                <svg viewBox="0 0 24 24"><path d="M12 3a8.5 8.5 0 0 0-8.5 8.5V18A2.5 2.5 0 0 0 6 20.5h2v-8H5.5v-1A6.5 6.5 0 0 1 18.5 11v1.5H16v8h2a2.5 2.5 0 0 0 2.5-2.5v-6.5A8.5 8.5 0 0 0 12 3Zm-1.2 12.2h2.4v-2.4h-2.4v2.4Zm.1-3.6h2.1c.1-1.8 2.2-1.9 2.2-4 0-1.9-1.5-3.2-3.4-3.2-1.6 0-2.9.8-3.5 2.2l1.9.9c.3-.7.8-1.2 1.5-1.2.8 0 1.3.5 1.3 1.3 0 1.2-2 1.5-2.1 4Z"/></svg>
             </a>
         </nav>
 
         <nav class="side-socials">
             <a class="side-link magnetic" href="{{ DISCORD_URL }}" target="_blank" rel="noopener" title="Discord" aria-label="Discord">
-                <svg viewBox="0 0 24 24"><path d="M8.2 8.6c1.2-.6 2.4-.8 3.8-.8s2.6.2 3.8.8c1.8 2.4 2.5 5.1 2.3 8.1-1.3 1-2.6 1.5-4 1.8l-.7-1.2c.8-.2 1.5-.6 2.1-1-1.8.8-4.1.8-5.9 0 .7.5 1.4.8 2.1 1l-.7 1.2c-1.4-.3-2.8-.9-4-1.8-.3-3 .5-5.7 2.2-8.1Zm2.1 5.2c.7 0 1.2-.6 1.2-1.3s-.5-1.3-1.2-1.3-1.2.6-1.2 1.3.5 1.3 1.2 1.3Zm3.4 0c.7 0 1.2-.6 1.2-1.3s-.5-1.3-1.2-1.3-1.2.6-1.2 1.3.5 1.3 1.2 1.3Z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M19.54 5.3A18.6 18.6 0 0 0 15.02 3.9a12.7 12.7 0 0 0-.58 1.18 17.3 17.3 0 0 0-4.88 0A12.7 12.7 0 0 0 8.98 3.9 18.6 18.6 0 0 0 4.45 5.3C1.58 9.55.8 13.7 1.19 17.8a18.9 18.9 0 0 0 5.56 2.8c.45-.61.85-1.26 1.19-1.94a12.2 12.2 0 0 1-1.87-.9c.16-.11.31-.23.46-.35a13.3 13.3 0 0 0 10.94 0l.46.35c-.6.35-1.23.65-1.88.9.34.68.74 1.33 1.19 1.94a18.9 18.9 0 0 0 5.57-2.8c.46-4.74-.78-8.85-3.27-12.5ZM8.68 15.28c-1.08 0-1.96-.99-1.96-2.2s.86-2.2 1.96-2.2c1.1 0 1.99 1 1.96 2.2 0 1.21-.86 2.2-1.96 2.2Zm6.64 0c-1.08 0-1.96-.99-1.96-2.2s.86-2.2 1.96-2.2c1.1 0 1.99 1 1.96 2.2 0 1.21-.86 2.2-1.96 2.2Z"/></svg>
             </a>
 
             <a class="side-link magnetic" href="#" title="Telegram" aria-label="Telegram">
@@ -151,11 +160,18 @@
     </header>
 
     <main class="site-main">
+        {% if messages %}
+            <div class="flash-stack">
+                {% for message in messages %}
+                    <div class="flash-message {{ message.tags|default:'info' }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 
 <footer class="site-footer">
-    <div>
+    <div class="footer-brand-block">
         <strong>WERTX RUST</strong>
         <p>Игровой проект серверов Rust.</p>
 
@@ -175,6 +191,11 @@
             </p>
         </div>
     </div>
+
+    <p class="footer-offer-notice">
+        Информация, размещенная на сайте, носит исключительно информационный характер и ни при каких
+        условиях не является публичной офертой, определяемой положениями ч. 2 ст. 437 Гражданского кодекса Российской Федерации.
+    </p>
 
     <div class="footer-links">
         <a href="{% url 'rules:rules_index' %}">Правила</a>
@@ -199,5 +220,21 @@
             </button>
         </div>
     </div>
+
+    <div class="cookie-banner" data-cookie-banner hidden>
+        <p>
+            Мы используем файлы cookie для авторизации через Steam, работы личного кабинета,
+            безопасности, обработки платежей и аналитики. Продолжая использовать сайт, вы соглашаетесь
+            с настоящей <a href="/legal/privacy/">Политикой конфиденциальности</a>.
+        </p>
+
+        <button class="main-button primary" type="button" data-cookie-accept>
+            Понятно
+        </button>
+    </div>
+
+    <button class="back-to-top" type="button" data-back-to-top aria-label="Наверх">
+        <svg viewBox="0 0 24 24"><path d="M12 5 5 12l1.4 1.4L11 8.8V20h2V8.8l4.6 4.6L19 12l-7-7Z"/></svg>
+    </button>
 </body>
 </html>																																	

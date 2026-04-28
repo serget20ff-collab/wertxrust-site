@@ -1,1 +1,39 @@
-{% extends 'base.html' %}{% block title %}Правила — WertxRust{% endblock %}{% block content %}<section class="page-wrap"><h1>Правила проекта</h1>{% for section in sections %}<div class="rules-section"><h2>{{ section.title }}</h2><p>{{ section.description }}</p>{% for item in section.items.all %}{% if item.is_public %}<article class="rule-item"><b>{{ item.code }}</b><h3>{{ item.title }}</h3><p>{{ item.body }}</p>{% if item.punishment %}<small>Наказание: {{ item.punishment }}</small>{% endif %}</article>{% endif %}{% endfor %}</div>{% empty %}<div class="glass-card"><h2>Правила готовятся</h2><p>Добавь разделы через Django Admin.</p></div>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Правила — WertxRust{% endblock %}
+
+{% block content %}
+<section class="page-wrap">
+    <h1>Правила проекта</h1>
+
+    {% for section in sections %}
+        <div class="rules-section">
+            <h2>{{ section.title }}</h2>
+            <p>{{ section.description }}</p>
+
+            {% for item in section.items.all %}
+                {% if item.is_public %}
+                    <article class="rule-item">
+                        <b>{{ item.code }}</b>
+                        <h3>{{ item.title }}</h3>
+                        <p>{{ item.body }}</p>
+
+                        {% if item.note %}
+                            <p class="rule-note">{{ item.note|linebreaksbr }}</p>
+                        {% endif %}
+
+                        {% if item.punishment %}
+                            <small>Наказание: {{ item.punishment }}</small>
+                        {% endif %}
+                    </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% empty %}
+        <div class="glass-card">
+            <h2>Правила готовятся</h2>
+            <p>Добавь разделы через Django Admin.</p>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

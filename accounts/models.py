@@ -85,7 +85,7 @@ class SteamProfile(models.Model):
     balance_rub = models.DecimalField(
         'Баланс, ₽',
         max_digits=10,
-        decimal_places=2,
+        decimal_places=0,
         default=0,
     )
 
@@ -171,7 +171,9 @@ class SteamProfile(models.Model):
             'dashboard': self.ROLE_PAID_ADMIN,
             'player_check': self.ROLE_PAID_ADMIN,
             'discord_tools': self.ROLE_DEVELOPER,
-	    'documents': self.ROLE_DEVELOPER,
+            'documents': self.ROLE_DEVELOPER,
+            'news': self.ROLE_DEVELOPER,
+            'rules': self.ROLE_DEVELOPER,
             'reports': self.ROLE_TRAINEE,
             'moderation': self.ROLE_MODERATOR,
 
@@ -319,3 +321,55 @@ class PlayerAdminNote(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class WalletTransaction(models.Model):
+    TX_TOPUP_CREDIT = 'topup_credit'
+    TX_PURCHASE = 'purchase'
+    TX_PURCHASE_REFUND = 'purchase_refund'
+    TX_TRANSFER_OUT = 'transfer_out'
+    TX_TRANSFER_IN = 'transfer_in'
+    TX_ADJUSTMENT = 'adjustment'
+
+    TX_TYPE_CHOICES = [
+        (TX_TOPUP_CREDIT, 'Пополнение'),
+        (TX_PURCHASE, 'Покупка'),
+        (TX_PURCHASE_REFUND, 'Возврат за покупку'),
+        (TX_TRANSFER_OUT, 'Перевод отправлен'),
+        (TX_TRANSFER_IN, 'Перевод получен'),
+        (TX_ADJUSTMENT, 'Корректировка'),
+    ]
+
+    profile = models.ForeignKey(
+        SteamProfile,
+        on_delete=models.CASCADE,
+        related_name='wallet_transactions',
+        verbose_name='Профиль',
+    )
+    tx_type = models.CharField('Тип операции', max_length=32, choices=TX_TYPE_CHOICES, db_index=True)
+    amount_rub = models.DecimalField('Сумма операции, ₽', max_digits=10, decimal_places=0)
+    balance_after_rub = models.DecimalField('Баланс после операции, ₽', max_digits=10, decimal_places=0)
+    counterparty_profile = models.ForeignKey(
+        SteamProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='wallet_counterparty_transactions',
+        verbose_name='Второй участник операции',
+    )
+    order = models.ForeignKey(
+        'shop.Order',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='wallet_transactions',
+        verbose_name='Заказ',
+    )
+    reference_code = models.CharField('Код операции', max_length=64, blank=True, db_index=True)
+    description = models.CharField('Описание', max_length=255, blank=True)
+    created_at = models.DateTimeField('Дата', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Операция кошелька'
+        verbose_name_plural = 'Операции кошелька'
+        ordering = ['-created_at']

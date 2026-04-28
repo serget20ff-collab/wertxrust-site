@@ -1,8 +1,10 @@
 from django import forms
 
 from core.models import LegalDocument
+from news.models import NewsPost
+from rules.models import RuleItem, RuleSection
 from shop.models import Product, ProductCategory, ProductContentItem
-from servers.models import RustServer, ServerApiToken
+from servers.models import RustServer, ServerApiToken, ServerShopCategory
 
 
 class ProductCategoryForm(forms.ModelForm):
@@ -42,9 +44,21 @@ class ProductForm(forms.ModelForm):
             'old_price_rub',
             'duration_days',
             'promo_duration_days',
+            'server_scope',
+            'servers',
+            'server_categories',
             'is_active',
             'is_featured',
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance and self.instance.pk and not self.initial.get('content_items_text'):
+            self.initial['content_items_text'] = '\n'.join(
+                f'{item.name} x{item.amount}'
+                for item in self.instance.content_items.all()
+            )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -102,6 +116,7 @@ class RustServerForm(forms.ModelForm):
             'name',
             'slug',
             'description',
+            'shop_category',
             'ip',
             'port',
             'server_type',
@@ -112,6 +127,22 @@ class RustServerForm(forms.ModelForm):
             'show_on_home',
             'sort_order',
         ]
+
+
+class ServerShopCategoryForm(forms.ModelForm):
+    class Meta:
+        model = ServerShopCategory
+        fields = [
+            'name',
+            'slug',
+            'description',
+            'sort_order',
+            'is_active',
+        ]
+
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
 
 
 class ServerApiTokenForm(forms.ModelForm):
@@ -143,4 +174,60 @@ class LegalDocumentForm(forms.ModelForm):
                     'placeholder': 'Введите текст документа...',
                 }
             ),
+        }
+
+
+class NewsPostForm(forms.ModelForm):
+    class Meta:
+        model = NewsPost
+        fields = [
+            'title',
+            'slug',
+            'post_type',
+            'excerpt',
+            'body',
+            'cover',
+            'is_published',
+            'published_at',
+        ]
+
+        widgets = {
+            'body': forms.Textarea(attrs={'rows': 10}),
+            'published_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+
+class RuleSectionForm(forms.ModelForm):
+    class Meta:
+        model = RuleSection
+        fields = [
+            'title',
+            'section_type',
+            'description',
+            'sort_order',
+            'is_public',
+        ]
+
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5}),
+        }
+
+
+class RuleItemForm(forms.ModelForm):
+    class Meta:
+        model = RuleItem
+        fields = [
+            'section',
+            'code',
+            'title',
+            'body',
+            'note',
+            'punishment',
+            'sort_order',
+            'is_public',
+        ]
+
+        widgets = {
+            'body': forms.Textarea(attrs={'rows': 6}),
+            'note': forms.Textarea(attrs={'rows': 3}),
         }

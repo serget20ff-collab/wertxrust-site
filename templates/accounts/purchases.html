@@ -27,9 +27,58 @@
     <div class="account-content">
         <h1>Список покупок</h1>
 
-        <div class="panel-empty">
-            <h3>Покупок пока нет</h3>
-            <p>После оформления заказа здесь появится история покупок и статус выдачи.</p>
+        <div class="panel-block compact-block">
+            <div class="panel-block-head">
+                <h2>Покупки</h2>
+            </div>
+            <div class="panel-table">
+                <div class="panel-table-head purchases-table">
+                    <span>Дата</span>
+                    <span>Товары</span>
+                    <span>Сервер</span>
+                    <span>Сумма</span>
+                    <span>Статус</span>
+                </div>
+                {% for order in orders %}
+                    <div class="panel-table-row purchases-table">
+                        <span>{{ order.created_at }}</span>
+                        <span>
+                            {% for item in order.items.all %}
+                                {{ item.product.name }} x{{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                —
+                            {% endfor %}
+                        </span>
+                        <span>{{ order.selected_server.name|default:'—' }}</span>
+                        <span>{{ order.total_rub|floatformat:0 }} ₽</span>
+                        <span>{{ order.get_status_display }}</span>
+                    </div>
+                {% empty %}
+                    <div class="panel-table-empty">Покупок пока нет.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel-block compact-block">
+            <div class="panel-block-head">
+                <h2>Пополнения</h2>
+            </div>
+            <div class="panel-table">
+                <div class="panel-table-head topups-table">
+                    <span>Дата</span>
+                    <span>Сумма</span>
+                    <span>Комментарий</span>
+                </div>
+                {% for topup in topups %}
+                    <div class="panel-table-row topups-table">
+                        <span>{{ topup.created_at }}</span>
+                        <span>{{ topup.amount_rub|floatformat:0 }} ₽</span>
+                        <span>{{ topup.description|default:'Пополнение баланса' }}</span>
+                    </div>
+                {% empty %}
+                    <div class="panel-table-empty">Пополнений пока нет.</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </section>

@@ -77,7 +77,8 @@
                     <span>{{ category.slug }}</span>
                     <span>{% if category.is_active %}Да{% else %}Нет{% endif %}</span>
                     <span>{{ category.icon|default:'—' }}</span>
-                    <span>
+                    <span class="panel-inline-actions">
+                        <a class="main-button dark" href="{% url 'panel:category_edit' category.pk %}">Изменить</a>
                         <form method="post" action="{% url 'panel:category_delete' category.pk %}">
                             {% csrf_token %}
                             <button class="panel-small-danger" type="submit">Удалить</button>
@@ -126,7 +127,8 @@
                         {% endif %}
                     </span>
 
-                    <span>
+                    <span class="panel-inline-actions">
+                        <a class="main-button dark" href="{% url 'panel:product_edit' product.pk %}">Изменить</a>
                         <form method="post" action="{% url 'panel:product_delete' product.pk %}">
                             {% csrf_token %}
                             <button class="panel-small-danger" type="submit">Удалить</button>

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование раздела правил — WertxRust{% endblock %}
+
+{% block content %}
+<section class="panel-page">
+    <div class="panel-hero">
+        <div>
+            <div class="section-kicker">EDIT RULE SECTION</div>
+            <h1>Редактирование раздела</h1>
+            <p>{{ section.title }}</p>
+        </div>
+
+        <a class="main-button dark" href="{% url 'panel:rules' %}">
+            Назад к правилам
+        </a>
+    </div>
+
+    <form class="panel-form-card single" method="post">
+        {% csrf_token %}
+
+        <h2>{{ section.title }}</h2>
+        <p>Измени тип, описание, порядок или видимость раздела.</p>
+
+        <div class="panel-form-grid">
+            {{ form.as_p }}
+        </div>
+
+        <button class="main-button primary" type="submit">
+            Сохранить изменения
+        </button>
+    </form>
+</section>
+{% endblock %}

@@ -19,22 +19,75 @@
         </a>
     </div>
 
-    <form class="panel-form-card single" method="post">
-        {% csrf_token %}
-        <h2>Добавить сервер</h2>
-        <p>
-            Включи “Показывать на странице серверов”, чтобы сервер появился во вкладке серверов.
-            Включи “Показывать на главной”, чтобы он появился в правом блоке на главной странице.
-        </p>
+    <div class="panel-forms-grid">
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="category">
+            <h2>Внутренняя категория</h2>
+            <p>Категории нужны для магазина: например Main, Trio, X2, PvE. Игроки их не видят напрямую.</p>
 
-        <div class="panel-form-grid">
-            {{ server_form.as_p }}
+            <div class="panel-form-grid">
+                {{ category_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать категорию
+            </button>
+        </form>
+
+        <form class="panel-form-card" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="server">
+            <h2>Добавить сервер</h2>
+            <p>
+                Включи “Показывать на странице серверов”, чтобы сервер появился во вкладке серверов.
+                Внутренняя категория используется для доступности товаров в магазине.
+            </p>
+
+            <div class="panel-form-grid">
+                {{ server_form.as_p }}
+            </div>
+
+            <button class="main-button primary" type="submit">
+                Создать сервер
+            </button>
+        </form>
+    </div>
+
+    <div class="panel-block">
+        <div class="panel-block-head">
+            <h2>Внутренние категории серверов</h2>
+            <p>Их можно назначать серверам, а потом выбирать в товарах магазина.</p>
         </div>
 
-        <button class="main-button primary" type="submit">
-            Создать сервер
-        </button>
-    </form>
+        <div class="panel-table">
+            <div class="panel-table-head simple-5">
+                <span>Название</span>
+                <span>Slug</span>
+                <span>Активна</span>
+                <span>Сортировка</span>
+                <span>Действие</span>
+            </div>
+
+            {% for category in server_categories %}
+                <div class="panel-table-row simple-5">
+                    <span>{{ category.name }}</span>
+                    <span>{{ category.slug }}</span>
+                    <span>{% if category.is_active %}Да{% else %}Нет{% endif %}</span>
+                    <span>{{ category.sort_order }}</span>
+                    <span class="panel-inline-actions">
+                        <a class="main-button dark" href="{% url 'panel:server_category_edit' category.pk %}">Изменить</a>
+                        <form method="post" action="{% url 'panel:server_category_delete' category.pk %}">
+                            {% csrf_token %}
+                            <button class="panel-small-danger" type="submit">Удалить</button>
+                        </form>
+                    </span>
+                </div>
+            {% empty %}
+                <div class="panel-table-empty">Внутренних категорий пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
 
     <div class="panel-block">
         <div class="panel-block-head">
@@ -46,7 +99,7 @@
             {% for server in servers %}
                 <article class="server-admin-card">
                     <div>
-                        <span>{{ server.server_type }}</span>
+                        <span>{{ server.server_type }}{% if server.shop_category %} · {{ server.shop_category.name }}{% endif %}</span>
                         <h3>{{ server.name }}</h3>
                         <p>{{ server.description|default:'Описание сервера пока не добавлено.' }}</p>
                     </div>
@@ -97,6 +150,10 @@
                                 Подключиться
                             </button>
                         {% endif %}
+
+                        <a class="main-button dark" href="{% url 'panel:server_edit' server.pk %}">
+                            Изменить
+                        </a>
 
                         <form method="post" action="{% url 'panel:server_delete' server.pk %}">
                             {% csrf_token %}

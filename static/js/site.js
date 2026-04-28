@@ -2,6 +2,10 @@
     document.addEventListener('DOMContentLoaded', function () {
         const header = document.getElementById('topHeader');
         const glow = document.getElementById('cursorGlow');
+        const ambientLayer = document.querySelector('.ambient-layer');
+        const backToTopButton = document.querySelector('[data-back-to-top]');
+        const cookieBanner = document.querySelector('[data-cookie-banner]');
+        const cookieAcceptButton = document.querySelector('[data-cookie-accept]');
 
         const dropdowns = document.querySelectorAll('[data-dropdown]');
         const topupOpenButtons = document.querySelectorAll('[data-open-topup]');
@@ -28,6 +32,10 @@
                 header.classList.remove('is-hidden');
             }
 
+            if (backToTopButton) {
+                backToTopButton.classList.toggle('is-visible', currentScrollY > 520);
+            }
+
             lastScrollY = currentScrollY;
             ticking = false;
         }
@@ -43,7 +51,57 @@
             if (glow) {
                 glow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
             }
+
+            if (ambientLayer) {
+                const moveX = (event.clientX / window.innerWidth - 0.5) * 8;
+                const moveY = (event.clientY / window.innerHeight - 0.5) * 8;
+                ambientLayer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+            }
         }, { passive: true });
+
+        if (backToTopButton) {
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
+            });
+        }
+
+        try {
+            if (cookieBanner && window.localStorage.getItem('wertxrust_cookie_notice') !== 'accepted') {
+                cookieBanner.hidden = false;
+
+                window.requestAnimationFrame(function () {
+                    cookieBanner.classList.add('is-visible');
+                });
+            }
+
+            if (cookieAcceptButton && cookieBanner) {
+                cookieAcceptButton.addEventListener('click', function () {
+                    window.localStorage.setItem('wertxrust_cookie_notice', 'accepted');
+                    cookieBanner.classList.remove('is-visible');
+
+                    window.setTimeout(function () {
+                        cookieBanner.hidden = true;
+                    }, 180);
+                });
+            }
+        } catch (error) {
+            if (cookieBanner) {
+                cookieBanner.hidden = true;
+            }
+        }
+
+        document.querySelectorAll('.flash-message.error').forEach(function (message) {
+            window.setTimeout(function () {
+                message.classList.add('is-hiding');
+
+                window.setTimeout(function () {
+                    message.remove();
+                }, 220);
+            }, 3000);
+        });
 
         dropdowns.forEach(function (dropdown) {
             const button = dropdown.querySelector('[data-dropdown-button]');
@@ -114,6 +172,45 @@
                 }
             });
         }
+
+        document.addEventListener('click', function (event) {
+            const dropdownButton = event.target.closest('[data-dropdown-button]');
+
+            if (dropdownButton) {
+                const dropdown = dropdownButton.closest('[data-dropdown]');
+
+                if (dropdown) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    dropdowns.forEach(function (item) {
+                        if (item !== dropdown) {
+                            item.classList.remove('is-open');
+                        }
+                    });
+
+                    dropdown.classList.toggle('is-open');
+                }
+
+                return;
+            }
+
+            const topupOpenButton = event.target.closest('[data-open-topup]');
+
+            if (topupOpenButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                openTopupModal();
+                return;
+            }
+
+            const topupCloseButton = event.target.closest('[data-close-topup]');
+
+            if (topupCloseButton) {
+                event.preventDefault();
+                closeTopupModal();
+            }
+        }, true);
 
         function closeProductModals() {
             document.querySelectorAll('.product-modal').forEach(function (modal) {
@@ -212,6 +309,22 @@
             input.addEventListener('input', function () {
                 const modal = input.closest('.product-modal');
                 updateModalPrice(modal);
+            });
+        });
+
+        document.querySelectorAll('[data-buy-form]').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                const modal = form.closest('.product-modal');
+                if (!modal) return;
+
+                const qtyInput = modal.querySelector('[data-qty-input]');
+                const hiddenQtyInput = form.querySelector('[data-buy-qty]');
+                if (!qtyInput || !hiddenQtyInput) return;
+
+                let quantity = parseInt(qtyInput.value || '1', 10);
+                if (Number.isNaN(quantity) || quantity < 1) quantity = 1;
+                if (quantity > 99) quantity = 99;
+                hiddenQtyInput.value = quantity;
             });
         });
 
